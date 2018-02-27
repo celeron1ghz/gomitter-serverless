@@ -3,7 +3,7 @@
 const vo = require('vo');
 
 const COMMANDS = {
-
+  list: require('./src/ListGomiCommand'),
 };
 
 module.exports.main = (event, context, callback) => {

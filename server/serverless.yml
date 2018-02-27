@@ -6,7 +6,18 @@ provider:
   region: ap-northeast-1
   deploymentBucket: serverless-upload-ap-northeast-1
   versionFunctions: false
-#  iamRoleStatements:
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:BatchGetItem
+        - dynamodb:PutItem
+      Resource:
+        - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi"]]
+        - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_sequence"]]
+        - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_tweet"]]
+
 #    - Effect: "Allow"
 #      Action:
 #        - "s3:ListBucket"
