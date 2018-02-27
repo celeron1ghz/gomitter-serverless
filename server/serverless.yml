@@ -1,4 +1,4 @@
-service: aws-nodejs # NOTE: update this with your service name
+service: gomitter-server
 provider:
   name: aws
   runtime: nodejs6.10
