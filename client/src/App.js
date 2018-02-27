@@ -9,11 +9,15 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    //fetch(this.ENDPOINT_URL)
-    window.fetch(window.location.origin + '/test.json', { credentials: 'include' })
+    window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify({ command: "mogemoge"  }) })
+    //window.fetch(window.location.origin + '/test.json', { credentials: 'include' })
       .then(data => data.json())
       .then(data => {
-        this.setState({ tweets: data.tweets });
+        if (data.error) {
+          console.log(data);
+        } else {
+          this.setState({ tweets: data.tweets });
+        }
       })
       .catch(err => {
         console.log(err);
