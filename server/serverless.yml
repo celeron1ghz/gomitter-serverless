@@ -10,6 +10,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:Scan
+        - dynamodb:Query
         - dynamodb:GetItem
         - dynamodb:BatchGetItem
         - dynamodb:PutItem
@@ -18,20 +19,6 @@ provider:
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_sequence"]]
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_tweet"]]
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_tweet2"]]
-
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
 
 functions:
   main:
@@ -49,21 +36,20 @@ resources:
       Properties:
         TableName: gomi_tweet2
         AttributeDefinitions:
-          - { AttributeName: id,        AttributeType: S }
+          - { AttributeName: id,        AttributeType: N }
           - { AttributeName: member_id, AttributeType: S }
-          - { AttributeName: gomi_id,   AttributeType: S }
         KeySchema:
           - { AttributeName: id, KeyType: HASH }
         ProvisionedThroughput:
           ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          WriteCapacityUnits: 7
         GlobalSecondaryIndexes:
           - IndexName: gomi_tweet2_gsi
             KeySchema:
-              - { AttributeName: member_id,  KeyType: HASH }
-              - { AttributeName: gomi_id,    KeyType: RANGE }
+              - { AttributeName: member_id, KeyType: HASH }
+              - { AttributeName: id,        KeyType: RANGE }
             Projection:
               ProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 1
-              WriteCapacityUnits: 1
+              WriteCapacityUnits: 7
