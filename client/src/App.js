@@ -48,7 +48,11 @@ class App extends React.Component {
     return <div className="container">
       <br/>
       <Well bsSize="small">
-        Gomitter
+        <span onClick={() => alert("バーーーカwwwwwwwwwwwwwwwwwwww")}>
+          <Glyphicon glyph="trash"/><Glyphicon glyph="trash"/><Glyphicon glyph="trash"/>
+          Gomitter
+          <Glyphicon glyph="trash"/><Glyphicon glyph="trash"/><Glyphicon glyph="trash"/>
+        </span>
       </Well>
 
       <Panel bsStyle="info">
@@ -68,7 +72,11 @@ class App extends React.Component {
             tweets.map(t =>
               <ListGroupItem key={t.id} style={{ whiteSpace: "pre" }} onClick={this.tweet.bind(this,t)}>
                 {t.tweet}
-                <div className="text-muted">{t.member_id} {new Date(t.created_at * 1000).toISOString()}</div>
+                <div className="text-muted">
+                  <Glyphicon glyph="user"/> {t.member_id}
+                  &nbsp;&nbsp;
+                  <Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toISOString()}
+                </div>
               </ListGroupItem>
             )
           }
