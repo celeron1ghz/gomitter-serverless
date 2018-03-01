@@ -20,7 +20,6 @@ module.exports.main = (event, context, callback) => {
       throw { code: 400, message: 'INVALID_COMMAND' };
     }
 
-
     try {
       const ret = yield new cmd(body).run();
       return callback(null, {

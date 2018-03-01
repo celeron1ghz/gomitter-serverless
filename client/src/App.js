@@ -9,7 +9,22 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify({ command: "list"  }) })
+    this.search("global_hist");
+  }
+
+  onChange(e){
+    this.search(e.target.value);
+  }
+
+  search(type){
+    let param;
+    if (type === "global_hist") param = { command: "list" };
+    if (type === "my_hist")     param = { command: "list", member_id: "celeron1ghz" };
+    //if (type === "global_rank") param = {};
+    //if (type === "my_rank")     param = {};
+
+    console.log("SEARCH_PARAM", param);
+    window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify(param) })
       .then(data => data.json())
       .then(data => {
         if (data.error) {
@@ -21,14 +36,6 @@ class App extends React.Component {
       .catch(err => {
         console.log(err);
       });
-  }
-
-  onChange(e){
-    alert(e.target.value);
-  }
-
-  search(){
-
   }
 
   tweet(tweet) {
@@ -48,8 +55,8 @@ class App extends React.Component {
         <Panel.Heading><Glyphicon glyph="search"/> 検索するゴミの条件</Panel.Heading>
         <Panel.Body>
           <FormControl componentClass="select" placeholder="select" onChange={this.onChange.bind(this)}>
-            <option value="select1">select</option>
-            <option value="select2">select</option>
+            <option value="global_hist">みんなが使ったゴミ</option>
+            <option value="my_hist">自分が使ったゴミ</option>
           </FormControl>
         </Panel.Body>
       </Panel>

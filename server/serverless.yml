@@ -19,6 +19,7 @@ provider:
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_sequence"]]
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_tweet"]]
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_tweet2"]]
+        - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_tweet2/index/*"]]
 
 functions:
   main:

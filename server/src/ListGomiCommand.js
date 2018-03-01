@@ -1,36 +1,56 @@
 const aws = require('aws-sdk');
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true });
+const vo = require('vo');
 const _ = require('lodash');
 
 class ListGomiCommand {
-  constructor() {
+  constructor(args,user){
+    this.member_id = args.member_id;
   }
 
   run() {
-    return dynamodb
-      .get({ TableName: 'gomi_sequence', Key: { key: 'gomi_tweet' } }).promise()
-      .then(data => {
-        const seq = data.Item.current_number;
-        const param = _.rangeRight(seq, seq - 10).map(i => { return { id: i } });
+    const self = this;
+    return vo(function*(){
+      const getList = self.member_id
+        ? dynamodb.query({
+            TableName: 'gomi_tweet2',
+            IndexName: 'gomi_tweet2_gsi',
+            KeyConditionExpression: 'member_id = :id',
+            ExpressionAttributeValues: { ':id': self.member_id },
+            Limit: 20,
+            ScanIndexForward: false,
+          }).promise().then(data => data.Items)
+        : vo(function*(){
+            const sequence = yield dynamodb.get({ TableName: 'gomi_sequence', Key: { key: 'gomi_tweet' } }).promise();
+            const seq = sequence.Item.current_number;
+            const history_ids = _.rangeRight(seq, seq - 20).map(i => { return { id: i } });
+            console.log("TOP:", seq);
 
-        return dynamodb.batchGet({
-          RequestItems: { 'gomi_tweet2': { Keys: param } }
-        }).promise();
-      })
+            return yield dynamodb
+              .batchGet({ RequestItems: { 'gomi_tweet2': { Keys: history_ids } } }).promise()
+              .then(data => data.Responses.gomi_tweet2);
+          });
+
+      const tweets = yield getList;
+      const ids  = _.uniqBy(tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
+      const gomi = yield dynamodb
+        .batchGet({ RequestItems: { 'gomi': { Keys: ids } } }).promise()
+        .then(data => data.Responses.gomi);
+
+      const gomiIdx = {};
+
+      for (const g of gomi) {
+        gomiIdx[g.gomi_id] = g.text;
+      }
+
+      for (const t of tweets) {
+        t.tweet = gomiIdx[t.gomi_id];
+        delete t.gomi_id;
+      }
+
+      return tweets;
+    });
   }
-/*
-        return dynamodb.query({
-          TableName: 'gomi_tweet2',
-          KeyConditionExpression: 'id >= 0',
-          //ExpressionAttributeValues: { ':id': 0 },
-          Limit: 5,
-          ScanIndexForward: false,
-          //: next,
-        }).promise()
-      })
-      .then(data => data.Items);
-*/
-
 }
 
 module.exports = ListGomiCommand;
