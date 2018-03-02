@@ -1,13 +1,21 @@
 import React from 'react';
-import { ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
+import { Modal, Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
+import FontAwesome from 'react-fontawesome';
+
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import '../node_modules/bootstrap/dist/css/bootstrap-theme.min.css';
+import '../node_modules/font-awesome/css/font-awesome.min.css';
 
 class App extends React.Component {
   constructor() {
     super();
-    this.state = { tweets: [] };
+    this.state = { tweets: [], showModal: false, input: "" };
     this.ENDPOINT_URL = "https://yer2wph4n1.execute-api.ap-northeast-1.amazonaws.com/dev/";
 
-    this.tweet = this.tweet.bind(this);
+    this.tweet        = this.tweet.bind(this);
+    this.openModal    = this.openModal.bind(this);
+    this.closeModal   = this.closeModal.bind(this);
+    this.inputUpdate  = this.inputUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -16,6 +24,18 @@ class App extends React.Component {
 
   onChange(e){
     this.search(e.target.value);
+  }
+
+  inputUpdate(e) {
+    this.setState({ input: e.target.value });
+  }
+
+  openModal() {
+    this.setState({ showModal: true });
+  }
+
+  closeModal() {
+    this.setState({ showModal: false });
   }
 
   apiCall(param) {
@@ -56,33 +76,32 @@ class App extends React.Component {
   }
 
   render() {
-    const { tweets } = this.state;
+    const { tweets, showModal, input } = this.state;
 
     return <div className="container">
       <br/>
       <Well bsSize="small" className="clearfix">
         <span onClick={() => alert("バーーーカwwwwwwwwwwwwwwwwwwww")}>
-          <Glyphicon glyph="trash"/><Glyphicon glyph="trash"/><Glyphicon glyph="trash"/>
+          <Glyphicon glyph="trash"/>
           Gomitter
-          <Glyphicon glyph="trash"/><Glyphicon glyph="trash"/><Glyphicon glyph="trash"/>
+          <Glyphicon glyph="trash"/>
         </span>
         <div className="pull-right">
           {
             <ButtonToolbar>
-              <DropdownButton
+              <DropdownButton pullRight
                 bsStyle="success"
                 bsSize="xsmall"
                 id="dropdown-size-extra-small"
-                title={"aaasss"}>
-                  <MenuItem eventKey="1">aaaa</MenuItem>
-                  <MenuItem eventKey="2">ログアウト</MenuItem>
+                title={<Glyphicon glyph="fire"/>}>
+                  <MenuItem eventKey="1" onClick={this.openModal}><Glyphicon glyph="plus"/> 新規ツイート</MenuItem>
+                  <MenuItem divider />
+                  <MenuItem eventKey="2"><Glyphicon glyph="log-out"/> ログアウト</MenuItem>
               </DropdownButton>
             </ButtonToolbar>
           }
         </div>
       </Well>
-
-      {/*<Button onClick={this.tweet}>aaa</Button>*/}
 
       <Panel bsStyle="info">
         <Panel.Heading><Glyphicon glyph="search"/> 検索するゴミの条件</Panel.Heading>
@@ -111,6 +130,21 @@ class App extends React.Component {
           }
         </ListGroup>
       </Panel>
+
+      <Modal show={showModal} onHide={this.closeModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <Glyphicon glyph="plus"/> 新規にゴミをつくる ({input.length}/140)
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <FormControl componentClass="textarea" placeholder="(ゴミを入力)" rows={10} onChange={this.inputUpdate} value={input}/>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.closeModal}><Glyphicon glyph="remove"/> 閉じる</Button>
+          <Button bsStyle="primary" onClick={this.closeModal}><FontAwesome name="twitter"/> Tweet</Button>
+        </Modal.Footer>
+      </Modal>
     </div>;
   }
 }
