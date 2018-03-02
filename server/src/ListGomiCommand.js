@@ -21,8 +21,13 @@ class ListGomiCommand {
             ScanIndexForward: false,
           }).promise().then(data => data.Items)
         : vo(function*(){
-            const sequence = yield dynamodb.get({ TableName: 'gomi_sequence', Key: { key: 'gomi_tweet' } }).promise();
-            const seq = sequence.Item.current_number;
+            const sequence = yield dynamodb
+              .get({ TableName: 'gomi_sequence2', Key: { key: 'gomi_tweet' } }).promise()
+              .then(data => data.Item);
+
+            if (!sequence) return [];
+
+            const seq = sequence.current_number;
             const history_ids = _.rangeRight(seq, seq - 20).map(i => { return { id: i } });
             console.log("TOP:", seq);
 
@@ -32,6 +37,9 @@ class ListGomiCommand {
           });
 
       const tweets = yield getList;
+
+      if (tweets.length === 0) return [];
+
       const ids  = _.uniqBy(tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
       const gomi = yield dynamodb
         .batchGet({ RequestItems: { 'gomi': { Keys: ids } } }).promise()

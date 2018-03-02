@@ -1,11 +1,13 @@
 import React from 'react';
-import { ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
+import { Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
 
 class App extends React.Component {
   constructor() {
     super();
     this.state = { tweets: [] };
-    this.ENDPOINT_URL = "https://ckg7x7v3a3.execute-api.ap-northeast-1.amazonaws.com/dev/";
+    this.ENDPOINT_URL = "https://yer2wph4n1.execute-api.ap-northeast-1.amazonaws.com/dev/";
+
+    this.tweet = this.tweet.bind(this);
   }
 
   componentDidMount() {
@@ -39,7 +41,20 @@ class App extends React.Component {
   }
 
   tweet(tweet) {
-    window.confirm(tweet.tweet);
+    //window.confirm(tweet.tweet);
+    console.log("TWEET");
+    window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify({ command: 'tweet' }) })
+      .then(data => data.json())
+      .then(data => {
+        if (data.error) {
+          console.log(data);
+        } else {
+          console.log(data);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   render() {
@@ -68,6 +83,8 @@ class App extends React.Component {
           }
         </div>
       </Well>
+
+<Button onClick={this.tweet}>aaa</Button>
 
       <Panel bsStyle="info">
         <Panel.Heading><Glyphicon glyph="search"/> 検索するゴミの条件</Panel.Heading>
