@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
+import { ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
 
 class App extends React.Component {
   constructor() {
@@ -18,6 +18,23 @@ class App extends React.Component {
     this.search(e.target.value);
   }
 
+  apiCall(param) {
+    return window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify(param) })
+      .then(data => data.json())
+      .then(data => {
+        if (data.error) {
+          console.log("API_ERROR", data);
+          alert(`リクエストでエラーが発生しました。しばらく経って再度エラーになってもゴミなのであきらめてください。(${data.error})`);
+        } else {
+          return data;
+        }
+      })
+      .catch(err => {
+        console.log("SERVER_ERROR", err);
+        alert(`サーバでエラーが発生しました。ゴミなのであきらめてください。(${err.message})`);
+      });
+  }
+
   search(type){
     let param;
     if (type === "global_hist") param = { command: "list" };
@@ -26,35 +43,16 @@ class App extends React.Component {
     //if (type === "my_rank")     param = {};
 
     console.log("SEARCH_PARAM", param);
-    window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify(param) })
-      .then(data => data.json())
-      .then(data => {
-        if (data.error) {
-          console.log(data);
-        } else {
-          this.setState({ tweets: data });
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
+
+    this.apiCall(param).then(data => {
+      this.setState({ tweets: data });
+    });
   }
 
   tweet(tweet) {
     //window.confirm(tweet.tweet);
     console.log("TWEET");
-    window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify({ command: 'tweet' }) })
-      .then(data => data.json())
-      .then(data => {
-        if (data.error) {
-          console.log(data);
-        } else {
-          console.log(data);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    this.apiCall({ command: 'tweet' });
   }
 
   render() {
@@ -84,7 +82,7 @@ class App extends React.Component {
         </div>
       </Well>
 
-<Button onClick={this.tweet}>aaa</Button>
+      {/*<Button onClick={this.tweet}>aaa</Button>*/}
 
       <Panel bsStyle="info">
         <Panel.Heading><Glyphicon glyph="search"/> 検索するゴミの条件</Panel.Heading>

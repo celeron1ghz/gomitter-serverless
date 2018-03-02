@@ -62,6 +62,7 @@ class TweetCommand {
         Item: { id: seq, gomi_id: id, member_id: self.member_id, created_at: now },
       }).promise();
 
+      return {};
     });
   }
 }

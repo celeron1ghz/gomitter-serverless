@@ -43,7 +43,7 @@ class ListGomiCommand {
       const ids  = _.uniqBy(tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
       const gomi = yield dynamodb
         .batchGet({ RequestItems: { 'gomi2': { Keys: ids } } }).promise()
-        .then(data => data.Responses.gomi);
+        .then(data => data.Responses.gomi2);
 
       const gomiIdx = {};
 
