@@ -21,20 +21,26 @@ module.exports.main = (event, context, callback) => {
       throw { code: 400, message: 'INVALID_COMMAND' };
     }
 
+
+    let obj;
     try {
-      const ret = yield new cmd(body).run();
+      obj = new cmd(body);
+    } catch(e) {
+      throw { code: 400, message: 'INVALID_PARAM' };
+    }
+
+
+    try {
+      const ret = yield obj.run();
+
       return callback(null, {
         statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': event.headers.origin,
-          'Access-Control-Allow-Credentials': true,
-        },
+        headers: { 'Access-Control-Allow-Origin': '*' },
         body: JSON.stringify(ret),
       });
 
     } catch(e) {
-      console.log(e);
-      throw { code: 400, message: 'INVALID_PARAM' };
+      throw { code: 400, message: 'INTERNAL_ERROR' };
     }
 
   }).catch(err => {
@@ -49,10 +55,7 @@ module.exports.main = (event, context, callback) => {
 
     return callback(null, {
       statusCode: code,
-      headers: {
-        'Access-Control-Allow-Origin': event.headers.origin,
-        'Access-Control-Allow-Credentials': true,
-      },
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     });
   });
