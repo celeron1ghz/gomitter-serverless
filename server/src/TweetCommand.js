@@ -11,11 +11,8 @@ function md5(val)   {
 
 class TweetCommand {
   constructor(args,user){
-    //this.member_id = args.member_id;
-    //this.tweet     = args.tweet;
-
-    this.member_id = "mogemoge";
-    this.tweet     = "" + new Date().getTime();
+    this.member_id = args.member_id;
+    this.tweet     = args.tweet;
   }
 
 //    const client = new Twitter({
@@ -48,12 +45,21 @@ class TweetCommand {
 
       const id = md5(self.tweet);
       const now = "" + Math.round(new Date().getTime() / 1000);
-      const gomi = yield dynamodb.get({ TableName: 'gomi2', Key: {gomi_id:id} }).promise();
+      const gomi = yield dynamodb.get({ TableName: 'gomi2', Key: {gomi_id:id} }).promise().then(data => data.Item);
 
-      if (!gomi.Item) {
+      if (!gomi) {
         yield dynamodb.put({
           TableName: 'gomi2',
-          Item: { gomi_id: id, text: self.tweet, created_by: self.member_id }
+          Item: { gomi_id: id, text: self.tweet, created_by: self.member_id, count: 1 }
+        }).promise();
+      } else {
+        yield dynamodb.update({
+          TableName: 'gomi2',
+          Key: { gomi_id: id },
+          UpdateExpression: "ADD #count :i",
+          ExpressionAttributeNames: { '#count': 'count' },
+          ExpressionAttributeValues: {':i': 1},
+          ReturnValues: 'NONE',
         }).promise();
       }
 

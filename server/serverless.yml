@@ -19,7 +19,7 @@ provider:
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_sequence2"]]
 
     - Effect: Allow
-      Action: [dynamodb:GetItem, dynamodb:BatchGetItem, dynamodb:PutItem]
+      Action: [dynamodb:GetItem, dynamodb:BatchGetItem, dynamodb:PutItem, dynamodb:UpdateItem]
       Resource:
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi2"]]
 

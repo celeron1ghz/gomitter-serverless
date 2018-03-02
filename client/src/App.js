@@ -72,7 +72,7 @@ class App extends React.Component {
   tweet(tweet) {
     //window.confirm(tweet.tweet);
     console.log("TWEET");
-    this.apiCall({ command: 'tweet' });
+    this.apiCall({ command: 'tweet', member_id: "mogemoge", tweet: "poyopoyopoyo" });
   }
 
   render() {
