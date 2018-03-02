@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
+import { ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
 
 class App extends React.Component {
   constructor() {
@@ -47,12 +47,26 @@ class App extends React.Component {
 
     return <div className="container">
       <br/>
-      <Well bsSize="small">
+      <Well bsSize="small" className="clearfix">
         <span onClick={() => alert("バーーーカwwwwwwwwwwwwwwwwwwww")}>
           <Glyphicon glyph="trash"/><Glyphicon glyph="trash"/><Glyphicon glyph="trash"/>
           Gomitter
           <Glyphicon glyph="trash"/><Glyphicon glyph="trash"/><Glyphicon glyph="trash"/>
         </span>
+        <div className="pull-right">
+          {
+            <ButtonToolbar>
+              <DropdownButton
+                bsStyle="success"
+                bsSize="xsmall"
+                id="dropdown-size-extra-small"
+                title={"aaasss"}>
+                  <MenuItem eventKey="1">aaaa</MenuItem>
+                  <MenuItem eventKey="2">ログアウト</MenuItem>
+              </DropdownButton>
+            </ButtonToolbar>
+          }
+        </div>
       </Well>
 
       <Panel bsStyle="info">

@@ -32,7 +32,31 @@ functions:
 
 resources:
   Resources:
-    FavoriteTable:
+    GomiTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: gomi2
+        AttributeDefinitions:
+          - { AttributeName: gomi_id, AttributeType: S }
+        KeySchema:
+          - { AttributeName: gomi_id, KeyType: HASH }
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    GomiSequenceTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: gomi_sequence2
+        AttributeDefinitions:
+          - { AttributeName: key, AttributeType: S }
+        KeySchema:
+          - { AttributeName: key, KeyType: HASH }
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    GomiTweetTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: gomi_tweet2
@@ -43,7 +67,7 @@ resources:
           - { AttributeName: id, KeyType: HASH }
         ProvisionedThroughput:
           ReadCapacityUnits: 1
-          WriteCapacityUnits: 7
+          WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: gomi_tweet2_gsi
             KeySchema:
@@ -53,4 +77,4 @@ resources:
               ProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 1
-              WriteCapacityUnits: 7
+              WriteCapacityUnits: 1

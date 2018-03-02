@@ -3,7 +3,8 @@
 const vo = require('vo');
 
 const COMMANDS = {
-  list: require('./src/ListGomiCommand'),
+  list:  require('./src/ListGomiCommand'),
+  tweet: require('./src/TweetCommand'),
 };
 
 module.exports.main = (event, context, callback) => {
