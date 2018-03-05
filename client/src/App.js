@@ -65,14 +65,21 @@ class App extends React.Component {
     console.log("SEARCH_PARAM", param);
 
     this.apiCall(param).then(data => {
+      if (!data) return;
       this.setState({ tweets: data });
     });
   }
 
   tweet(tweet) {
-    //window.confirm(tweet.tweet);
-    console.log("TWEET");
-    this.apiCall({ command: 'tweet', member_id: "celeron1ghz", tweet: "poyopoyopoy" });
+    if (window.confirm(tweet.tweet)) {
+      console.log("TWEET");
+      this.apiCall({ command: 'tweet', member_id: "celeron1ghz", tweet: tweet.tweet }).then(data => {
+        alert('OK');
+        this.closeModal();
+      });
+    } else {
+      alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
+    }
   }
 
   render() {
@@ -150,7 +157,7 @@ class App extends React.Component {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={this.closeModal}><Glyphicon glyph="remove"/> 閉じる</Button>
-          <Button bsStyle="primary" onClick={this.closeModal}><FontAwesome name="twitter"/> Tweet</Button>
+          <Button bsStyle="primary" onClick={this.tweet.bind(this,{ tweet: input })}><FontAwesome name="twitter"/> Tweet</Button>
         </Modal.Footer>
       </Modal>
     </div>;
