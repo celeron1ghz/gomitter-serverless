@@ -55,7 +55,7 @@ class ListGomiCommand {
         delete t.gomi_id;
       }
 
-      return tweets;
+      return _.sortBy(tweets, ['id']).reverse();
     });
   }
 }
