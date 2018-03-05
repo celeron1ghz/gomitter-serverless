@@ -29,7 +29,6 @@ class ListGomiCommand {
 
             const seq = sequence.current_number;
             const history_ids = _.rangeRight(seq, seq - 20).map(i => { return { id: i } });
-            console.log("TOP:", seq);
 
             return yield dynamodb
               .batchGet({ RequestItems: { 'gomi_tweet2': { Keys: history_ids } } }).promise()

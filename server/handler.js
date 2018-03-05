@@ -32,6 +32,7 @@ module.exports.main = (event, context, callback) => {
 
 
     try {
+      console.log("ARGS:", JSON.stringify(body,null,2));
       const ret = yield obj.run();
 
       return callback(null, {
