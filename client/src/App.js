@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
+import { Badge, Modal, Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
@@ -59,8 +59,8 @@ class App extends React.Component {
     let param;
     if (type === "global_hist") param = { command: "list" };
     if (type === "my_hist")     param = { command: "list", member_id: "celeron1ghz" };
-    //if (type === "global_rank") param = {};
-    //if (type === "my_rank")     param = {};
+    if (type === "global_rank") param = { command: "rank" };
+    if (type === "my_rank")     param = { command: "rank", member_id: "celeron1ghz" };
 
     console.log("SEARCH_PARAM", param);
 
@@ -72,7 +72,7 @@ class App extends React.Component {
   tweet(tweet) {
     //window.confirm(tweet.tweet);
     console.log("TWEET");
-    this.apiCall({ command: 'tweet', member_id: "mogemoge", tweet: "poyopoyopoyo" });
+    this.apiCall({ command: 'tweet', member_id: "celeron1ghz", tweet: "poyopoyopoy" });
   }
 
   render() {
@@ -108,7 +108,9 @@ class App extends React.Component {
         <Panel.Body>
           <FormControl componentClass="select" placeholder="select" onChange={this.onChange.bind(this)}>
             <option value="global_hist">みんなが使ったゴミ</option>
+            <option value="global_rank">みんながよく使ったゴミ</option>
             <option value="my_hist">自分が使ったゴミ</option>
+            <option value="my_rank">自分がよく使ったゴミ</option>
           </FormControl>
         </Panel.Body>
       </Panel>
@@ -120,10 +122,16 @@ class App extends React.Component {
             tweets.map(t =>
               <ListGroupItem key={t.id} style={{ whiteSpace: "pre" }} onClick={this.tweet.bind(this,t)}>
                 {t.tweet}
+                {t.count && <Badge>{t.count}</Badge>}
                 <div className="text-muted">
-                  <Glyphicon glyph="user"/> {t.member_id}
-                  &nbsp;&nbsp;
-                  <Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toISOString()}
+                  {
+                    t.member_id &&
+                      <span><Glyphicon glyph="user"/> {t.member_id}&nbsp;&nbsp;</span>
+                  }
+                  {
+                    t.created_at &&
+                     <span><Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toISOString()}</span>
+                  }
                 </div>
               </ListGroupItem>
             )

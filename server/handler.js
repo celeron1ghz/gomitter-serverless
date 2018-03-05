@@ -3,6 +3,7 @@
 const vo = require('vo');
 
 const COMMANDS = {
+  rank:  require('./src/RankGomiCommand'),
   list:  require('./src/ListGomiCommand'),
   tweet: require('./src/TweetCommand'),
 };

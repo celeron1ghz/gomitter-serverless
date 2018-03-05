@@ -34,6 +34,7 @@ class TweetCommand {
     const self = this;
 
     return vo(function*(){
+      // get seq no
       const seq = yield dynamodb.update({
         TableName: 'gomi_sequence2',
         Key: { key: 'gomi_tweet' },
@@ -63,9 +64,29 @@ class TweetCommand {
         }).promise();
       }
 
+      // add tweet data
       yield dynamodb.put({
         TableName: 'gomi_tweet2',
         Item: { id: seq, gomi_id: id, member_id: self.member_id, created_at: now },
+      }).promise();
+
+      //count up
+      yield dynamodb.update({
+        TableName: 'gomi_rank2',
+        Key: { gomi_id: id, member_id: self.member_id },
+        UpdateExpression: "ADD #count :i",
+        ExpressionAttributeNames: { '#count': 'count' },
+        ExpressionAttributeValues: {':i': 1},
+        ReturnValues: 'NONE',
+      }).promise();
+
+      yield dynamodb.update({
+        TableName: 'gomi_rank2',
+        Key: { gomi_id: id, member_id: "##GLOBAL##" },
+        UpdateExpression: "ADD #count :i",
+        ExpressionAttributeNames: { '#count': 'count' },
+        ExpressionAttributeValues: {':i': 1},
+        ReturnValues: 'NONE',
       }).promise();
 
       return {};
