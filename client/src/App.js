@@ -12,6 +12,7 @@ class App extends React.Component {
     super();
     this.state = {
       selectedSearch: null,
+      selectedSearchLabel: null,
       tweets: [],
       next: null,
       showModal: false,
@@ -20,6 +21,12 @@ class App extends React.Component {
     };
     this.AUTH_ENDPOINT_URL = "https://auth.familiar-life.info";
     this.GOMI_ENDPOINT_URL = "https://zwnmd5ldw2.execute-api.ap-northeast-1.amazonaws.com/dev/";
+    this.Label = {
+      global_hist: "みんなが使ったゴミ",
+      global_rank: "みんながよく使うゴミ",
+      my_hist: "自分が使ったゴミ",
+      my_rank: "自分がよく使うゴミ",
+    };
 
     this.tweet        = this.tweet.bind(this);
     this.openModal    = this.openModal.bind(this);
@@ -27,6 +34,7 @@ class App extends React.Component {
     this.inputUpdate  = this.inputUpdate.bind(this);
     this.login        = this.login.bind(this);
     this.logout       = this.logout.bind(this);
+    this.reload       = this.reload.bind(this);
   }
 
   onChange(e){
@@ -127,12 +135,18 @@ class App extends React.Component {
       if (type === selectedSearch) {
         tweets.push(...data.tweets);
         console.log("APPEND");
-        this.setState({ selectedSearch: type, tweets: tweets, next: data.next });
+        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: tweets, next: data.next });
       } else {
         console.log("PUT");
-        this.setState({ selectedSearch: type, tweets: data.tweets, next: data.next });
+        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: data.tweets, next: data.next });
       }
     });
+  }
+
+  reload() {
+    const { selectedSearch } = this.state;
+    this.setState({ tweets: [] });
+    this.getSearchResult(selectedSearch, null);
   }
 
   tweet(tweet) {
@@ -148,7 +162,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { tweets, next, selectedSearch, showModal, input, me } = this.state;
+    const { tweets, next, selectedSearch, selectedSearchLabel, showModal, input, me } = this.state;
 
     if (me === "") {
       return <div className="container-fiuld text-center">
@@ -210,7 +224,10 @@ class App extends React.Component {
       </Panel>
 
       <Panel bsStyle="default">
-        <Panel.Heading><Glyphicon glyph="trash"/> みんなが使ったゴミ</Panel.Heading>
+        <Panel.Heading>
+          <Glyphicon glyph="trash"/> {selectedSearchLabel}
+          <div className="pull-right" onClick={this.reload}><Glyphicon glyph="refresh"/></div>
+        </Panel.Heading>
         <ListGroup>
           {
             tweets.map(t =>
