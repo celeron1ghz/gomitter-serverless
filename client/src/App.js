@@ -67,7 +67,7 @@ class App extends React.Component {
 
   login() {
     const getJwtToken = event => {
-      localStorage.setItem("token", event.data);
+      window.localStorage.setItem("token", event.data);
       this.getUserData();
     };
 
@@ -77,7 +77,7 @@ class App extends React.Component {
 
   logout() {
     if (window.confirm('ログアウトしますか？')) {
-      localStorage.clear();
+      window.localStorage.clear();
       this.setState({ me: null, favoriteIdx: {} });
     } else {
       alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
@@ -85,11 +85,11 @@ class App extends React.Component {
   }
 
   getUserData() {
-    const token = localStorage.getItem("token");
+    const token = window.localStorage.getItem("token");
 
     if (!token) return Promise.reject("No access_token. Please login!!");
 
-    return window.fetch(this.AUTH_ENDPOINT_URL + '/me', { headers: new Headers({ 'Authorization': "Bearer " + token }) })
+    return window.fetch(this.AUTH_ENDPOINT_URL + '/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
       .then(data => data.json())
       .then(data => {
         if (data.error) {
@@ -99,7 +99,7 @@ class App extends React.Component {
           this.setState({ me: data });
           return data;
         }
-      })
+      });
   }
 
   getSearchResult(type, next){
@@ -167,7 +167,7 @@ class App extends React.Component {
           {
             <ButtonToolbar>
               <DropdownButton pullRight
-                bsStyle="success"
+                bsStyle="primary"
                 bsSize="xsmall"
                 id="dropdown-size-extra-small"
                 title={<span><FontAwesome name="twitter"/> {me.screen_name}</span>}>
