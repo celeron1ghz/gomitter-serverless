@@ -17,7 +17,7 @@ class RankGomiCommand {
         KeyConditionExpression: 'member_id = :id',
         ExpressionAttributeNames:  { '#count': 'count' },
         ExpressionAttributeValues: { ':id': member_id },
-        Limit: 20,
+        Limit: 10,
         ScanIndexForward: false,
         ProjectionExpression: 'gomi_id, #count',
       }).promise().then(data => { return { tweets: data.Items, next: data.LastEvaluatedKey } });

@@ -9,7 +9,7 @@ import '../node_modules/font-awesome/css/font-awesome.min.css';
 class App extends React.Component {
   constructor() {
     super();
-    this.state = { tweets: [], showModal: false, input: "", me: null };
+    this.state = { tweets: [], next: null, showModal: false, input: "", me: null };
     this.ENDPOINT_URL = "https://yer2wph4n1.execute-api.ap-northeast-1.amazonaws.com/dev/";
 
     this.tweet        = this.tweet.bind(this);
@@ -68,7 +68,7 @@ class App extends React.Component {
     this.apiCall(param).then(data => {
       if (!data) return;
       console.log(data)
-      this.setState({ tweets: data.tweets });
+      this.setState({ tweets: data.tweets, next: data.next });
     });
   }
 
@@ -85,7 +85,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { tweets, showModal, input, me } = this.state;
+    const { tweets, next, showModal, input, me } = this.state;
 
     if (me) {
       return <div className="container-fiuld text-center">
@@ -155,6 +155,13 @@ class App extends React.Component {
                 </div>
               </ListGroupItem>
             )
+          }
+          {
+            next &&
+              <ListGroupItem>
+                Load Next
+                <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
+              </ListGroupItem>
           }
         </ListGroup>
       </Panel>
