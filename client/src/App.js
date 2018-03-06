@@ -17,21 +17,19 @@ class App extends React.Component {
       input: "",
       me: null
     };
-    this.ENDPOINT_URL = "https://zwnmd5ldw2.execute-api.ap-northeast-1.amazonaws.com/dev/";
+    this.AUTH_ENDPOINT_URL = "https://auth.familiar-life.info";
+    this.GOMI_ENDPOINT_URL = "https://zwnmd5ldw2.execute-api.ap-northeast-1.amazonaws.com/dev/";
 
     this.tweet        = this.tweet.bind(this);
     this.openModal    = this.openModal.bind(this);
     this.closeModal   = this.closeModal.bind(this);
     this.inputUpdate  = this.inputUpdate.bind(this);
-  }
-
-  componentDidMount() {
-    //this.setState({ me: {} });
-    this.search("global_hist");
+    this.login        = this.login.bind(this);
+    this.logout       = this.logout.bind(this);
   }
 
   onChange(e){
-    this.search(e.target.value);
+    this.getSearchResult(e.target.value);
   }
 
   inputUpdate(e) {
@@ -47,7 +45,7 @@ class App extends React.Component {
   }
 
   apiCall(param) {
-    return window.fetch(this.ENDPOINT_URL, { method: 'POST', body: JSON.stringify(param) })
+    return window.fetch(this.GOMI_ENDPOINT_URL, { method: 'POST', body: JSON.stringify(param) })
       .then(data => data.json())
       .then(data => {
         if (data.error) {
@@ -63,11 +61,52 @@ class App extends React.Component {
       });
   }
 
-  search(type, next){
+  componentDidMount() {
+    this.getUserData().then(this.getSearchResult.bind(this, "global_hist", null));
+  }
+
+  login() {
+    const getJwtToken = event => {
+      localStorage.setItem("token", event.data);
+      this.getUserData();
+    };
+
+    window.open(this.AUTH_ENDPOINT_URL + "/auth");
+    window.addEventListener('message', getJwtToken, false);
+  }
+
+  logout() {
+    if (window.confirm('ログアウトしますか？')) {
+      localStorage.clear();
+      this.setState({ me: null, favoriteIdx: {} });
+    } else {
+      alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
+    }
+  }
+
+  getUserData() {
+    const token = localStorage.getItem("token");
+
+    if (!token) return Promise.reject("No access_token. Please login!!");
+
+    return window.fetch(this.AUTH_ENDPOINT_URL + '/me', { headers: new Headers({ 'Authorization': "Bearer " + token }) })
+      .then(data => data.json())
+      .then(data => {
+        if (data.error) {
+          console.log("API_ERROR", data);
+          alert(`リクエストでエラーが発生しました。しばらく経って再度エラーになってもゴミなのであきらめてください。(${data.error})`);
+        } else {
+          this.setState({ me: data });
+          return data;
+        }
+      })
+  }
+
+  getSearchResult(type, next){
     const { selectedSearch, tweets } = this.state;
 
     let param;
-    if (type === "global_hist") param = { command: "list",  };
+    if (type === "global_hist") param = { command: "list" };
     if (type === "my_hist")     param = { command: "list", member_id: "celeron1ghz" };
     if (type === "global_rank") param = { command: "rank" };
     if (type === "my_rank")     param = { command: "rank", member_id: "celeron1ghz" };
@@ -76,7 +115,7 @@ class App extends React.Component {
 
     console.log("SEARCH_PARAM", param);
 
-    this.apiCall(param).then(data => {
+    return this.apiCall(param).then(data => {
       if (!data) return;
 
       if (type === selectedSearch) {
@@ -105,14 +144,14 @@ class App extends React.Component {
   render() {
     const { tweets, next, selectedSearch, showModal, input, me } = this.state;
 
-    if (me) {
+    if (!me) {
       return <div className="container-fiuld text-center">
         <h2>Gomitter</h2>
         <h2>└(┐┘)┌ </h2>
         <br/>
         <div className="text-muted">Make your timeline garble.</div>
         <br/>
-        <Button bsStyle="primary" href="#"><FontAwesome name="twitter"/> Login via Twitter</Button>
+        <Button bsStyle="primary" onClick={this.login}><FontAwesome name="twitter"/> Login via Twitter</Button>
       </div>;
     }
 
@@ -131,10 +170,10 @@ class App extends React.Component {
                 bsStyle="success"
                 bsSize="xsmall"
                 id="dropdown-size-extra-small"
-                title={<Glyphicon glyph="fire"/>}>
+                title={<span><FontAwesome name="twitter"/> {me.screen_name}</span>}>
                   <MenuItem eventKey="1" onClick={this.openModal}><Glyphicon glyph="plus"/> 新規ツイート</MenuItem>
                   <MenuItem divider />
-                  <MenuItem eventKey="2"><Glyphicon glyph="log-out"/> ログアウト</MenuItem>
+                  <MenuItem eventKey="2" onClick={this.logout}><Glyphicon glyph="log-out"/> ログアウト</MenuItem>
               </DropdownButton>
             </ButtonToolbar>
           }
@@ -176,7 +215,7 @@ class App extends React.Component {
           }
           {
             next &&
-              <ListGroupItem onClick={this.search.bind(this, selectedSearch, next)}>
+              <ListGroupItem onClick={this.getSearchResult.bind(this, selectedSearch, next)}>
                 Load Next
                 <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
               </ListGroupItem>
