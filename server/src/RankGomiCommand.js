@@ -6,6 +6,7 @@ const _ = require('lodash');
 class RankGomiCommand {
   constructor(args,user){
     this.member_id = args.member_id;
+    this.next      = args.next;
   }
 
   run() {
@@ -18,9 +19,16 @@ class RankGomiCommand {
         ExpressionAttributeNames:  { '#count': 'count' },
         ExpressionAttributeValues: { ':id': member_id },
         Limit: 10,
+        ExclusiveStartKey: self.next ? { member_id: member_id, gomi_id: self.next } : null,
         ScanIndexForward: false,
         ProjectionExpression: 'gomi_id, #count',
-      }).promise().then(data => { return { tweets: data.Items, next: data.LastEvaluatedKey } });
+      }).promise().then(data => {
+        console.log(data.LastEvaluatedKey)
+        return {
+          tweets: data.Items,
+          next: data.LastEvaluatedKey ? data.LastEvaluatedKey.gomi_id : null,
+        };
+      });
 
       if (ret.tweets.length === 0) return ret;
 
