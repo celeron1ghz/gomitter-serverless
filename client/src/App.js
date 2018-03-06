@@ -9,7 +9,7 @@ import '../node_modules/font-awesome/css/font-awesome.min.css';
 class App extends React.Component {
   constructor() {
     super();
-    this.state = { tweets: [], showModal: false, input: "" };
+    this.state = { tweets: [], showModal: false, input: "", me: null };
     this.ENDPOINT_URL = "https://yer2wph4n1.execute-api.ap-northeast-1.amazonaws.com/dev/";
 
     this.tweet        = this.tweet.bind(this);
@@ -19,6 +19,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    //this.setState({ me: {} });
     this.search("global_hist");
   }
 
@@ -83,7 +84,18 @@ class App extends React.Component {
   }
 
   render() {
-    const { tweets, showModal, input } = this.state;
+    const { tweets, showModal, input, me } = this.state;
+
+    if (me) {
+      return <div className="container-fiuld text-center">
+        <h2>Gomitter</h2>
+        <h2>└(┐┘)┌ </h2>
+        <br/>
+        <div className="text-muted">Make your timeline garble.</div>
+        <br/>
+        <Button bsStyle="primary" href="#"><FontAwesome name="twitter"/> Login via Twitter</Button>
+      </div>;
+    }
 
     return <div className="container">
       <br/>
