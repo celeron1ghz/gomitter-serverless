@@ -12,7 +12,7 @@ class RankGomiCommand {
     const self = this;
     const member_id = self.member_id || '##GLOBAL##';
     return vo(function*(){
-      const tweets = yield dynamodb.query({
+      const ret = yield dynamodb.query({
         TableName: 'gomi_rank2',
         KeyConditionExpression: 'member_id = :id',
         ExpressionAttributeNames:  { '#count': 'count' },
@@ -20,11 +20,11 @@ class RankGomiCommand {
         Limit: 20,
         ScanIndexForward: false,
         ProjectionExpression: 'gomi_id, #count',
-      }).promise().then(data => data.Items);
+      }).promise().then(data => { return { tweets: data.Items, next: data.LastEvaluatedKey } });
 
-      if (tweets.length === 0) return [];
+      if (ret.tweets.length === 0) return ret;
 
-      const ids  = _.uniqBy(tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
+      const ids  = _.uniqBy(ret.tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
       const gomi = yield dynamodb
         .batchGet({ RequestItems: { 'gomi2': { Keys: ids } } }).promise()
         .then(data => data.Responses.gomi2);
@@ -35,12 +35,12 @@ class RankGomiCommand {
         gomiIdx[g.gomi_id] = g.text;
       }
 
-      for (const t of tweets) {
+      for (const t of ret.tweets) {
         t.tweet = gomiIdx[t.gomi_id];
         delete t.gomi_id;
       }
 
-      return tweets;
+      return ret;
     });
   }
 }

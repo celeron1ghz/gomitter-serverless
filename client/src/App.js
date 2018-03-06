@@ -67,7 +67,8 @@ class App extends React.Component {
 
     this.apiCall(param).then(data => {
       if (!data) return;
-      this.setState({ tweets: data });
+      console.log(data)
+      this.setState({ tweets: data.tweets });
     });
   }
 
