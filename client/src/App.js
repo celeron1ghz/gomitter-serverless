@@ -1,6 +1,7 @@
 import React from 'react';
-import { Badge, Modal, Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
+import { Image, Badge, Modal, Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
+import relativeDate from 'relative-date';
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/css/bootstrap-theme.min.css';
@@ -62,13 +63,18 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.getUserData().then(this.getSearchResult.bind(this, "global_hist", null));
+    this.getUserData()
+      .then(this.getSearchResult.bind(this, "global_hist", null))
+      .catch(err => {
+        console.log("Error on get auth data:", err);
+        this.setState({ me: "" });
+      })
   }
 
   login() {
     const getJwtToken = event => {
       window.localStorage.setItem("token", event.data);
-      this.getUserData();
+      this.componentDidMount()
     };
 
     window.open(this.AUTH_ENDPOINT_URL + "/auth");
@@ -78,7 +84,7 @@ class App extends React.Component {
   logout() {
     if (window.confirm('ログアウトしますか？')) {
       window.localStorage.clear();
-      this.setState({ me: null, favoriteIdx: {} });
+      this.setState({ me: "" });
     } else {
       alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
     }
@@ -144,7 +150,7 @@ class App extends React.Component {
   render() {
     const { tweets, next, selectedSearch, showModal, input, me } = this.state;
 
-    if (!me) {
+    if (me === "") {
       return <div className="container-fiuld text-center">
         <h2>Gomitter</h2>
         <h2>└(┐┘)┌ </h2>
@@ -152,6 +158,12 @@ class App extends React.Component {
         <div className="text-muted">Make your timeline garble.</div>
         <br/>
         <Button bsStyle="primary" onClick={this.login}><FontAwesome name="twitter"/> Login via Twitter</Button>
+      </div>;
+    }
+
+    if (!me) {
+      return <div className="text-center">
+        <h1><FontAwesome name="spinner" spin pulse={true} /> Loading...</h1>
       </div>;
     }
 
@@ -171,6 +183,11 @@ class App extends React.Component {
                 bsSize="xsmall"
                 id="dropdown-size-extra-small"
                 title={<span><FontAwesome name="twitter"/> {me.screen_name}</span>}>
+                  <MenuItem eventKey="0">
+                    {me.display_name + ' '}
+                    <Image circle src={me.profile_image_url} style={{width: "32px", height: "32px", border: "1px solid gray" }}/>
+                  </MenuItem>
+                  <MenuItem divider />
                   <MenuItem eventKey="1" onClick={this.openModal}><Glyphicon glyph="plus"/> 新規ツイート</MenuItem>
                   <MenuItem divider />
                   <MenuItem eventKey="2" onClick={this.logout}><Glyphicon glyph="log-out"/> ログアウト</MenuItem>
@@ -185,9 +202,9 @@ class App extends React.Component {
         <Panel.Body>
           <FormControl componentClass="select" placeholder="select" onChange={this.onChange.bind(this)}>
             <option value="global_hist">みんなが使ったゴミ</option>
-            <option value="global_rank">みんながよく使ったゴミ</option>
+            <option value="global_rank">みんながよく使うゴミ</option>
             <option value="my_hist">自分が使ったゴミ</option>
-            <option value="my_rank">自分がよく使ったゴミ</option>
+            <option value="my_rank">自分がよく使うゴミ</option>
           </FormControl>
         </Panel.Body>
       </Panel>
@@ -207,7 +224,9 @@ class App extends React.Component {
                   }
                   {
                     t.created_at &&
-                     <span><Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toISOString()}</span>
+                      <span>
+                        <Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toISOString()} ({relativeDate(t.created_at * 1000)})
+                      </span>
                   }
                 </div>
               </ListGroupItem>
@@ -215,15 +234,20 @@ class App extends React.Component {
           }
           {
             next &&
-              <ListGroupItem onClick={this.getSearchResult.bind(this, selectedSearch, next)}>
-                Load Next
-                <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
+              <ListGroupItem className="text-center text-muted">
+                <span onClick={this.getSearchResult.bind(this, selectedSearch, next)}>
+                  <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
+                  Load Next
+                  <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
+                </span>
               </ListGroupItem>
           }
           {
             !next &&
-              <ListGroupItem className="text-center">
-                <Glyphicon glyph="trash"/> 最後だよ <Glyphicon glyph="trash"/>
+              <ListGroupItem className="text-center text-muted">
+                <span onClick={() => alert("最後だって言ってるだろ！！！！（ﾌﾞﾁｷﾞﾚ")}>
+                  <Glyphicon glyph="trash"/> 最後だよ <Glyphicon glyph="trash"/>
+                </span>
               </ListGroupItem>
           }
         </ListGroup>
