@@ -8,6 +8,7 @@ const TWEET_PER_PAGE = 10;
 class ListGomiCommand {
   constructor(args,user){
     this.member_id = args.member_id;
+    this.next      = args.next;
   }
 
   run() {
@@ -20,18 +21,30 @@ class ListGomiCommand {
             KeyConditionExpression: 'member_id = :id',
             ExpressionAttributeValues: { ':id': self.member_id },
             Limit: TWEET_PER_PAGE,
+            ExclusiveStartKey: self.next ? { member_id: self.member_id, id: self.next } : null,
             ScanIndexForward: false,
-          }).promise().then(data => { return { tweets: data.Items || [], next: data.LastEvaluatedKey }; })
+          }).promise().then(data => {
+            return {
+              tweets: data.Items || [],
+              next: data.LastEvaluatedKey ? data.LastEvaluatedKey.id : null,
+            };
+          })
         : vo(function*(){
-            const sequence = yield dynamodb
-              .get({ TableName: 'gomi_sequence2', Key: { key: 'gomi_tweet' } }).promise()
-              .then(data => data.Item);
+            let seq;
 
-            if (!sequence) return { tweets: [] };
+            if (self.next) {
+              seq = self.next;
+            } else {
+              const sequence = yield dynamodb
+                .get({ TableName: 'gomi_sequence2', Key: { key: 'gomi_tweet' } }).promise()
+                .then(data => data.Item);
 
-            const seq = sequence.current_number;
-            const history_ids = _.rangeRight(seq, seq - TWEET_PER_PAGE - 1).filter(i => i > 0);
+              if (!sequence) return { tweets: [] };
 
+              seq = sequence.current_number;
+            }
+
+            const history_ids = _.range(seq - TWEET_PER_PAGE, seq + 1).filter(i => i > 0);
             const data = yield dynamodb.batchGet({
               RequestItems: {
                 'gomi_tweet2': {
@@ -40,7 +53,7 @@ class ListGomiCommand {
               }
             }).promise();
 
-            const ret = { tweets: data.Responses.gomi_tweet2 };
+            const ret = { tweets: _.sortBy(data.Responses.gomi_tweet2, ['id']).reverse() };
 
             if (ret.tweets.length === TWEET_PER_PAGE + 1) {
               const last = ret.tweets.pop();
@@ -69,7 +82,6 @@ class ListGomiCommand {
         delete t.gomi_id;
       }
 
-      ret.tweets = _.sortBy(ret.tweets, ['id']).reverse();
       return ret;
     });
   }

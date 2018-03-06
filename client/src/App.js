@@ -9,7 +9,14 @@ import '../node_modules/font-awesome/css/font-awesome.min.css';
 class App extends React.Component {
   constructor() {
     super();
-    this.state = { tweets: [], next: null, showModal: false, input: "", me: null };
+    this.state = {
+      selectedSearch: null,
+      tweets: [],
+      next: null,
+      showModal: false,
+      input: "",
+      me: null
+    };
     this.ENDPOINT_URL = "https://yer2wph4n1.execute-api.ap-northeast-1.amazonaws.com/dev/";
 
     this.tweet        = this.tweet.bind(this);
@@ -56,19 +63,30 @@ class App extends React.Component {
       });
   }
 
-  search(type){
+  search(type, next){
+    const { selectedSearch, tweets } = this.state;
+
     let param;
-    if (type === "global_hist") param = { command: "list" };
+    if (type === "global_hist") param = { command: "list",  };
     if (type === "my_hist")     param = { command: "list", member_id: "celeron1ghz" };
     if (type === "global_rank") param = { command: "rank" };
     if (type === "my_rank")     param = { command: "rank", member_id: "celeron1ghz" };
+
+    param.next = next;
 
     console.log("SEARCH_PARAM", param);
 
     this.apiCall(param).then(data => {
       if (!data) return;
-      console.log(data)
-      this.setState({ tweets: data.tweets, next: data.next });
+
+      if (type === selectedSearch) {
+        tweets.push(...data.tweets);
+        console.log("APPEND");
+        this.setState({ selectedSearch: type, tweets: tweets, next: data.next });
+      } else {
+        console.log("PUT");
+        this.setState({ selectedSearch: type, tweets: data.tweets, next: data.next });
+      }
     });
   }
 
@@ -85,7 +103,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { tweets, next, showModal, input, me } = this.state;
+    const { tweets, next, selectedSearch, showModal, input, me } = this.state;
 
     if (me) {
       return <div className="container-fiuld text-center">
@@ -158,9 +176,15 @@ class App extends React.Component {
           }
           {
             next &&
-              <ListGroupItem>
+              <ListGroupItem onClick={this.search.bind(this, selectedSearch, next)}>
                 Load Next
                 <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
+              </ListGroupItem>
+          }
+          {
+            !next &&
+              <ListGroupItem className="text-center">
+                <Glyphicon glyph="trash"/> 最後だよ <Glyphicon glyph="trash"/>
               </ListGroupItem>
           }
         </ListGroup>
