@@ -17,7 +17,7 @@ class App extends React.Component {
       input: "",
       me: null
     };
-    this.ENDPOINT_URL = "https://yer2wph4n1.execute-api.ap-northeast-1.amazonaws.com/dev/";
+    this.ENDPOINT_URL = "https://zwnmd5ldw2.execute-api.ap-northeast-1.amazonaws.com/dev/";
 
     this.tweet        = this.tweet.bind(this);
     this.openModal    = this.openModal.bind(this);

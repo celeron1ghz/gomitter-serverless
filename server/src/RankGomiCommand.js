@@ -15,6 +15,7 @@ class RankGomiCommand {
     return vo(function*(){
       const ret = yield dynamodb.query({
         TableName: 'gomi_rank2',
+        IndexName: 'gomi_rank2_gsi',
         KeyConditionExpression: 'member_id = :id',
         ExpressionAttributeNames:  { '#count': 'count' },
         ExpressionAttributeValues: { ':id': member_id },
