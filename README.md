@@ -7,7 +7,7 @@ https://github.com/celeron1ghz/Gomitter-Web/
 #### 二代目 (nodejs + express + aws-serverless-express)
 https://github.com/celeron1ghz/gomitter-nodejs/
 
-#### 三代目 (nodejs with serverless framework)
+#### 三代目 (nodejs with serverless framework + react)
 https://github.com/celeron1ghz/gomitter-serverless/
 
 
@@ -15,16 +15,22 @@ https://github.com/celeron1ghz/gomitter-serverless/
 ## SETUP ENVIRONMENT VARIABLES
 Set these value to `EC2 Parameter Store`.
 
- * `/slack/webhook/dev`: Slack incoming webhook URL
+ * `/twitter_oauth/jwt_token`: Secret seed for jwt
 
 
 ## SETUP SERVERLESS SCRIPT
 ```
-git clone https://github.com/celeron1ghz/lambda-aws-billing-notifier.git
-cd twitter-bot-mimin
+cd client
 sls deploy
 ```
 
 
 # SETUP CLIENT SIDE
-TDB
+Using `create-react-app`. Just build and deploy.
+
+```
+cd client
+yarn build
+cd build
+aws s3 sync . s3://your-public-bucket --acl public-read
+```
