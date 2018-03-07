@@ -57,7 +57,8 @@ class ListGomiCommand {
 
             const ret = { tweets: _.sortBy(data.Responses.gomi_tweet2, ['id']).reverse() };
 
-            if (ret.tweets.length === TWEET_PER_PAGE + 1) {
+            // show paging until zero
+            if (history_ids.length === TWEET_PER_PAGE + 1) {
               const last = ret.tweets.pop();
               ret.next = last.id;
             }
