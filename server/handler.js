@@ -79,24 +79,27 @@ module.exports.main = (event, context, callback) => {
       });
 
     } catch(e) {
-      console.log(e);
+      console.log("Error on running command:", e);
       throw { code: 400, message: 'INTERNAL_ERROR' };
     }
 
   }).catch(err => {
     let code;
+    let mess;
+    console.log("ERROR:", err);
 
     if (err instanceof Error) {
-      console.log("Error on endpoint:", err);
       code = 500;
+      mess = 'INTERNAL_ERROR';
     } else {
       code = err.code;
+      mess = err.message;
     }
 
     return callback(null, {
       statusCode: code,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: 'INTERNAL_ERROR' }),
+      body: JSON.stringify({ error: mess }),
     });
   });
 };
