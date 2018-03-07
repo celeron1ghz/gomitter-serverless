@@ -15,6 +15,7 @@ vo(function*(){
 
         for (const t of tweets) {
             if (t.member_id === "##global##") {
+                cnt--;
                 continue;
             }
 
@@ -33,7 +34,9 @@ vo(function*(){
             }
         }
 
+        console.log("  batchWrite... remain=", cnt);
         yield dynamodb.batchWrite({ RequestItems: { [table + "2"]: rows } }).promise();
+        console.log(table, "finished");
     }
 })
 .catch(err => {
