@@ -21,7 +21,7 @@ class App extends React.Component {
       me: null
     };
     this.AUTH_ENDPOINT_URL = "https://auth.familiar-life.info";
-    this.GOMI_ENDPOINT_URL = "https://zwnmd5ldw2.execute-api.ap-northeast-1.amazonaws.com/dev/";
+    this.GOMI_ENDPOINT_URL = "https://xpu12l92hl.execute-api.ap-northeast-1.amazonaws.com/dev/";
     this.Label = {
       global_hist: "みんなが使ったゴミ",
       global_rank: "みんながよく使うゴミ",
