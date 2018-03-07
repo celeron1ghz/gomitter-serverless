@@ -11,7 +11,7 @@ function md5(val)   {
 
 class TweetCommand {
   constructor(args,user){
-    this.member_id = args.member_id;
+    this.member_id = user.screen_name;
     this.tweet     = args.tweet;
   }
 

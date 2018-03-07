@@ -144,9 +144,9 @@ class App extends React.Component {
 
     let param;
     if (type === "global_hist") param = { command: "list" };
-    if (type === "my_hist")     param = { command: "list", member_id: "celeron1ghz" };
+    if (type === "my_hist")     param = { command: "list", me: 1 };
     if (type === "global_rank") param = { command: "rank" };
-    if (type === "my_rank")     param = { command: "rank", member_id: "celeron1ghz" };
+    if (type === "my_rank")     param = { command: "rank", me: 1 };
 
     param.next = next;
 
@@ -155,7 +155,7 @@ class App extends React.Component {
     return this.apiCall(param).then(data => {
       if (!data) return;
 
-      if (type === selectedSearch) {
+      if (type === selectedSearch && next) {
         tweets.push(...data.tweets);
         console.log("APPEND_TWEET", tweets.length);
         this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: tweets, next: data.next });
@@ -168,14 +168,13 @@ class App extends React.Component {
 
   reload() {
     const { selectedSearch } = this.state;
-    this.setState({ tweets: [] });
     this.getSearchResult(selectedSearch, null);
   }
 
   tweet(tweet) {
     if (window.confirm(tweet.tweet)) {
       console.log("TWEET");
-      this.apiCall({ command: 'tweet', member_id: "celeron1ghz", tweet: tweet.tweet }).then(data => {
+      this.apiCall({ command: 'tweet', tweet: tweet.tweet }).then(data => {
         alert('OK');
         this.closeModal();
       });

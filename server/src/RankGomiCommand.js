@@ -5,7 +5,9 @@ const _ = require('lodash');
 
 class RankGomiCommand {
   constructor(args,user){
-    this.member_id = args.member_id;
+    if (args.me) {
+      this.member_id = user.screen_name;
+    }
     this.next      = args.next;
   }
 

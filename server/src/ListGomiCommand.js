@@ -7,7 +7,9 @@ const TWEET_PER_PAGE = 10;
 
 class ListGomiCommand {
   constructor(args,user){
-    this.member_id = args.member_id;
+    if (args.me) {
+      this.member_id = user.screen_name;
+    }
     this.next      = args.next;
   }
 

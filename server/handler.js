@@ -62,7 +62,7 @@ module.exports.main = (event, context, callback) => {
 
     let obj;
     try {
-      obj = new cmd(body);
+      obj = new cmd(body,user);
     } catch(e) {
       throw { code: 400, message: 'INVALID_PARAM' };
     }
