@@ -14,6 +14,13 @@ class RankGomiCommand {
   run() {
     const self = this;
     const member_id = self.member_id || '##GLOBAL##';
+    let ekey = null;
+
+    if (self.next) {
+      const splitted = self.next.split(',');
+      ekey = { member_id: member_id, gomi_id: splitted[0], count: +splitted[1] };
+    }
+
     return vo(function*(){
       const ret = yield dynamodb.query({
         TableName: 'gomi_rank2',
@@ -22,14 +29,14 @@ class RankGomiCommand {
         ExpressionAttributeNames:  { '#count': 'count' },
         ExpressionAttributeValues: { ':id': member_id },
         Limit: 10,
-        ExclusiveStartKey: self.next ? { member_id: member_id, gomi_id: self.next } : null,
+        ExclusiveStartKey: ekey,
         ScanIndexForward: false,
         ProjectionExpression: 'gomi_id, #count',
       }).promise().then(data => {
-        console.log(data.LastEvaluatedKey)
+        const ekey = data.LastEvaluatedKey;
         return {
           tweets: data.Items,
-          next: data.LastEvaluatedKey ? data.LastEvaluatedKey.gomi_id : null,
+          next: ekey ? [ekey.gomi_id, ekey.count].join(',') : null,
         };
       });
 

@@ -69,7 +69,7 @@ class App extends React.Component {
       headers: new window.Headers({ 'Authorization': "Bearer " + token }),
     }).then(data => data.json())
       .then(data => {
-        if (data.error) {
+        if (data.error === "EXPIRED") {
           console.log("Error on access to API:", data);
           alert("セッションが切れました。再度ログインしてください。");
           this.setState({ me: "" });
