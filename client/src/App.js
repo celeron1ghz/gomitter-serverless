@@ -56,7 +56,11 @@ class App extends React.Component {
   apiCall(param) {
     const token = window.localStorage.getItem("token");
 
-    if (!token) return Promise.reject("No access_token. Please login!!");
+    if (!token) {
+      alert("ログインしてください。");
+      this.setState({ me: "" });
+      return;
+    }
 
     return window.fetch(this.GOMI_ENDPOINT_URL, {
       method: 'POST',
@@ -65,15 +69,22 @@ class App extends React.Component {
     }).then(data => data.json())
       .then(data => {
         if (data.error) {
+          console.log("Error on access to API:", data);
+          alert("セッションが切れました。再度ログインしてください。");
+          this.setState({ me: "" });
+          return;
+        }
+
+        if (data.error) {
           console.log("API_ERROR", data);
-          alert(`リクエストでエラーが発生しました。しばらく経って再度エラーになってもゴミなのであきらめてください。(${data.error})`);
+          alert(`リクエストでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${data.error})`);
         } else {
           return data;
         }
       })
       .catch(err => {
         console.log("SERVER_ERROR", err);
-        alert(`サーバでエラーが発生しました。ゴミなのであきらめてください。(${err.message})`);
+        alert(`サーバでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${err.message})`);
       });
   }
 
@@ -81,15 +92,21 @@ class App extends React.Component {
     this.getUserData()
       .then(this.getSearchResult.bind(this, "global_hist", null))
       .catch(err => {
-        console.log("Error on get auth data:", err);
+        console.log("Error on init:", err);
         this.setState({ me: "" });
-      })
+      });
   }
 
   login() {
     const getJwtToken = event => {
       window.localStorage.setItem("token", event.data);
-      this.componentDidMount()
+
+      this.getUserData()
+        .then(this.getSearchResult.bind(this, "global_hist", null))
+        .catch(err => {
+          alert(err);
+          this.setState({ me: "" });
+        });
     };
 
     window.open(this.AUTH_ENDPOINT_URL + "/auth");
@@ -108,18 +125,17 @@ class App extends React.Component {
   getUserData() {
     const token = window.localStorage.getItem("token");
 
-    if (!token) return Promise.reject("No access_token. Please login!!");
+    if (!token) return Promise.reject("ログインしてください。(local)");
 
     return window.fetch(this.AUTH_ENDPOINT_URL + '/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
       .then(data => data.json())
       .then(data => {
         if (data.error) {
-          console.log("API_ERROR", data);
-          alert(`リクエストでエラーが発生しました。しばらく経って再度エラーになってもゴミなのであきらめてください。(${data.error})`);
-        } else {
-          this.setState({ me: data });
-          return data;
+          return Promise.reject(`ログインしてください。(auth:${data.error})`);
         }
+
+        this.setState({ me: data });
+        return data;
       });
   }
 
@@ -141,10 +157,10 @@ class App extends React.Component {
 
       if (type === selectedSearch) {
         tweets.push(...data.tweets);
-        console.log("APPEND");
+        console.log("APPEND_TWEET", tweets.length);
         this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: tweets, next: data.next });
       } else {
-        console.log("PUT");
+        console.log("PUT_TWEET", data.tweets.length);
         this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: data.tweets, next: data.next });
       }
     });
