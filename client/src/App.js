@@ -54,8 +54,15 @@ class App extends React.Component {
   }
 
   apiCall(param) {
-    return window.fetch(this.GOMI_ENDPOINT_URL, { method: 'POST', body: JSON.stringify(param) })
-      .then(data => data.json())
+    const token = window.localStorage.getItem("token");
+
+    if (!token) return Promise.reject("No access_token. Please login!!");
+
+    return window.fetch(this.GOMI_ENDPOINT_URL, {
+      method: 'POST',
+      body: JSON.stringify(param),
+      headers: new window.Headers({ 'Authorization': "Bearer " + token }),
+    }).then(data => data.json())
       .then(data => {
         if (data.error) {
           console.log("API_ERROR", data);
@@ -225,7 +232,7 @@ class App extends React.Component {
 
       <Panel bsStyle="default">
         <Panel.Heading>
-          <Glyphicon glyph="trash"/> {selectedSearchLabel}
+          <Glyphicon glyph="trash"/> {selectedSearchLabel || '読み込み中...'}
           <div className="pull-right" onClick={this.reload}><Glyphicon glyph="refresh"/></div>
         </Panel.Heading>
         <ListGroup>
