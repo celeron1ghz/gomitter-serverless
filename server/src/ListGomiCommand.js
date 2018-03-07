@@ -84,6 +84,12 @@ class ListGomiCommand {
         delete t.gomi_id;
       }
 
+      const global = yield dynamodb
+        .get({ TableName: 'gomi_count2', Key: { member_id: self.member_id || '##GLOBAL##' } }).promise()
+        .then(data => data.Item);
+
+      ret.count = global ? global.count : 0;
+
       return ret;
     });
   }

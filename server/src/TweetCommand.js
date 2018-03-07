@@ -89,6 +89,24 @@ class TweetCommand {
         ReturnValues: 'NONE',
       }).promise();
 
+      yield dynamodb.update({
+        TableName: 'gomi_count2',
+        Key: { member_id: self.member_id },
+        UpdateExpression: "ADD #count :i",
+        ExpressionAttributeNames: { '#count': 'count' },
+        ExpressionAttributeValues: {':i': 1},
+        ReturnValues: 'NONE',
+      }).promise();
+
+      yield dynamodb.update({
+        TableName: 'gomi_count2',
+        Key: { member_id: "##GLOBAL##" },
+        UpdateExpression: "ADD #count :i",
+        ExpressionAttributeNames: { '#count': 'count' },
+        ExpressionAttributeValues: {':i': 1},
+        ReturnValues: 'NONE',
+      }).promise();
+
       return {};
     });
   }

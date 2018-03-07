@@ -14,6 +14,7 @@ class App extends React.Component {
       selectedSearch: null,
       selectedSearchLabel: null,
       tweets: [],
+      count: null,
       next: null,
       showModal: false,
       input: "",
@@ -158,10 +159,10 @@ class App extends React.Component {
       if (type === selectedSearch && next) {
         tweets.push(...data.tweets);
         console.log("APPEND_TWEET", tweets.length);
-        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: tweets, next: data.next });
+        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: tweets, next: data.next, count: data.count });
       } else {
         console.log("PUT_TWEET", data.tweets.length);
-        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: data.tweets, next: data.next });
+        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: data.tweets, next: data.next, count: data.count });
       }
     });
   }
@@ -184,7 +185,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { tweets, next, selectedSearch, selectedSearchLabel, showModal, input, me } = this.state;
+    const { tweets, next, count, selectedSearch, selectedSearchLabel, showModal, input, me } = this.state;
 
     if (me === "") {
       return <div className="container-fiuld text-center">
@@ -219,7 +220,7 @@ class App extends React.Component {
                 bsSize="xsmall"
                 id="dropdown-size-extra-small"
                 title={<span><FontAwesome name="twitter"/> {me.screen_name}</span>}>
-                  <MenuItem eventKey="0">
+                  <MenuItem eventKey="0" onClick={() => alert("はずれ")}>
                     {me.display_name + ' '}
                     <Image circle src={me.profile_image_url} style={{width: "32px", height: "32px", border: "1px solid gray" }}/>
                   </MenuItem>
@@ -247,15 +248,19 @@ class App extends React.Component {
 
       <Panel bsStyle="default">
         <Panel.Heading>
-          <Glyphicon glyph="trash"/> {selectedSearchLabel || '読み込み中...'}
+          <Glyphicon glyph="trash"/>
+          {' '}
+          {selectedSearchLabel || '読み込み中...'}
+          {' '}
+          <Badge>{count}</Badge>
           <div className="pull-right" onClick={this.reload}><Glyphicon glyph="refresh"/></div>
         </Panel.Heading>
         <ListGroup>
           {
             tweets.map(t =>
               <ListGroupItem key={t.id} style={{ whiteSpace: "pre" }} onClick={this.tweet.bind(this,t)}>
-                {t.tweet}
                 {t.count && <Badge>{t.count}</Badge>}
+                {t.tweet}
                 <div className="text-muted">
                   {
                     t.member_id &&
