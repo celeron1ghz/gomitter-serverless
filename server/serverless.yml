@@ -141,8 +141,18 @@ resources:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
 
+    ## server-side setting
+    RecordSetOfServer:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        Name: "gomi-api.camelon.info"
+        Type: A
+        HostedZoneName: "camelon.info."
+        AliasTarget:
+          DNSName: { Fn::GetAtt: [DomainOfCamelon, DistributionDomainName] }
+          HostedZoneId: Z2FDTNDATAQYW2
 
-    ## serve setting
+    ## client-side setting
     Bucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -162,7 +172,7 @@ resources:
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
-    Cloudfront:
+    CloudfrontOfCamelon:
       Type: AWS::CloudFront::Distribution
       Properties:
         DistributionConfig:
@@ -181,9 +191,9 @@ resources:
               QueryString: true
               Headers:
                 - Origin
-            MinTTL: 86400
-            MaxTTL: 86400
-            DefaultTTL: 86400
+            MinTTL: 8640000
+            MaxTTL: 8640000
+            DefaultTTL: 8640000
           Enabled: true
           Origins:
             - Id: GomitterWebAssets
@@ -191,37 +201,25 @@ resources:
               S3OriginConfig:
                 OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
 
-
-    ## domain setting
-    Domain:
+    DomainOfCamelon:
       Type: AWS::ApiGateway::DomainName
       Properties:
         CertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
         DomainName: "gomi-api.camelon.info"
 
-    Mapping:
+    MappingOfCamelon:
       Type: AWS::ApiGateway::BasePathMapping
       Properties:
-        DomainName: { Ref: Domain }
+        DomainName: { Ref: DomainOfCamelon }
         RestApiId:  { Ref: ApiGatewayRestApi }
         Stage: dev
 
-    RecordSetOfApi:
-      Type: AWS::Route53::RecordSet
-      Properties:
-        Name: "gomi-api.camelon.info"
-        Type: A
-        HostedZoneName: "camelon.info."
-        AliasTarget:
-          DNSName: { Fn::GetAtt: [Domain, DistributionDomainName] }
-          HostedZoneId: Z2FDTNDATAQYW2
-
-    RecordSetOfCloudfront:
+    RecordSetOfCamelon:
       Type: AWS::Route53::RecordSet
       Properties:
         Name: "gomi2.camelon.info"
         Type: A
         HostedZoneName: "camelon.info."
         AliasTarget:
-          DNSName: { Fn::GetAtt: [Cloudfront, DomainName] }
+          DNSName: { Fn::GetAtt: [CloudfrontOfCamelon, DomainName] }
           HostedZoneId: Z2FDTNDATAQYW2
