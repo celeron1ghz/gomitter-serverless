@@ -224,3 +224,43 @@ resources:
         AliasTarget:
           DNSName: { Fn::GetAtt: [CloudfrontOfCamelon, DomainName] }
           HostedZoneId: Z2FDTNDATAQYW2
+
+    ## gomi.familiar-life.info setting
+    CloudfrontOfFamiliarLife:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Comment: gomitter web assets
+          Aliases:
+            - "gomi2.familiar-life.info"
+          HttpVersion: http2
+          ViewerCertificate:
+            AcmCertificateArn: "${file(./param.js):FAMILIAR_LIFE_CERT_ARN}"
+            SslSupportMethod: sni-only
+          DefaultRootObject: index.html
+          DefaultCacheBehavior:
+            TargetOriginId: GomitterWebAssetsForFamiliarLife
+            ViewerProtocolPolicy: allow-all
+            ForwardedValues:
+              QueryString: true
+              Headers:
+                - Origin
+            MinTTL: 8640000
+            MaxTTL: 8640000
+            DefaultTTL: 8640000
+          Enabled: true
+          Origins:
+            - Id: GomitterWebAssetsForFamiliarLife
+              DomainName: "${self:service}.s3.amazonaws.com"
+              S3OriginConfig:
+                OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
+
+    RecordSetOfFamiliarLife:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        Name: "gomi2.familiar-life.info"
+        Type: A
+        HostedZoneName: "familiar-life.info."
+        AliasTarget:
+          DNSName: { Fn::GetAtt: [CloudfrontOfFamiliarLife, DomainName] }
+          HostedZoneId: Z2FDTNDATAQYW2

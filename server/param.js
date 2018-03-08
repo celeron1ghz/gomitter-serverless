@@ -12,3 +12,8 @@ module.exports.CAMELON_CERT_ARN =
   () => acm.listCertificates({}).promise()
           .then(data => data.CertificateSummaryList.filter(data => data.DomainName === '*.camelon.info')[0])
           .then(data => data.CertificateArn);
+
+module.exports.FAMILIAR_LIFE_CERT_ARN =
+  () => acm.listCertificates({}).promise()
+          .then(data => data.CertificateSummaryList.filter(data => data.DomainName === '*.familiar-life.info')[0])
+          .then(data => data.CertificateArn);
