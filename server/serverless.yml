@@ -173,6 +173,7 @@ resources:
           ViewerCertificate:
             AcmCertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
             SslSupportMethod: sni-only
+          DefaultRootObject: index.html
           DefaultCacheBehavior:
             TargetOriginId: GomitterWebAssets
             ViewerProtocolPolicy: allow-all
