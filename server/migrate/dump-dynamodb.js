@@ -8,7 +8,7 @@ vo(function*(){
     let lastKey = {};
     let ret;
 
-    for (const table of ["gomi"]) {
+    for (const table of ["gomi_tweet"]) {
         console.log(table, "start");
 
         ret = yield dynamodb.scan({ TableName: table }).promise();

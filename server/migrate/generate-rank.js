@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const fs = require("fs");
 const vo = require('vo');
 const aws = require('aws-sdk');
@@ -5,7 +6,6 @@ const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true, reg
 
 vo(function*(){
     const table ="gomi_tweet";
-
     const data = fs.readFileSync(table + '.json');
     const tweets = JSON.parse(data);
 
@@ -32,8 +32,10 @@ vo(function*(){
         gomi_count[t.gomi_id] += 1;
     }
     let queue;
+    let chunk;
 
 /*
+    // this section's WCU is 200
     console.log("creating total...", total);
     yield dynamodb.update({
         TableName: 'gomi_count2',
@@ -43,9 +45,7 @@ vo(function*(){
         ExpressionAttributeValues: {':i': total},
         ReturnValues: 'NONE',
     }).promise();
-*/
 
-/*
     console.log("creating member total count...", Object.keys(member_count).length);
     queue = [];
     for (const member_id of Object.keys(member_count) ) {
@@ -60,11 +60,17 @@ vo(function*(){
             ReturnValues: 'NONE',
         }).promise());
     }
-    console.log("querying...");
-    Promise.all(queue).catch(err => { console.log(err) });
+    console.log("querying...", queue.length);
+    chunk = _.chunk(queue, 1000);
+    for (const q of chunk) {
+      console.log("request", q.length, "...");
+      yield Promise.all(q).catch(err => { console.log(err) });
+    }
+    console.log("finished", queue.length);
 */
 
 /*
+    // this section's WCU is 200
     console.log("creating gomi total count...", Object.keys(gomi_count).length);
     queue = [];
     for (const gomi_id of Object.keys(gomi_count) ) {
@@ -79,12 +85,8 @@ vo(function*(){
             ReturnValues: 'NONE',
         }).promise());
     }
-    console.log("querying...");
-    Promise.all(queue).catch(err => { console.log(err) });
-*/
 
     console.log("creating gomi each count...", Object.keys(member_gomi_count).length);
-    queue = [];
     for (const label of Object.keys(member_gomi_count) ) {
         const count = member_gomi_count[label];
         const splitted = label.split('@');
@@ -100,9 +102,15 @@ vo(function*(){
             ReturnValues: 'NONE',
         }).promise());
     }
-    console.log("querying...");
-    Promise.all(queue).catch(err => { console.log(err) });
 
+    console.log("querying...", queue.length);
+    chunk = _.chunk(queue, 1000);
+    for (const q of chunk) {
+      console.log("request", q.length, "...");
+      yield Promise.all(q).catch(err => { console.log(err) });
+    }
+    console.log("finished", queue.length);
+*/
 
 })
 .catch(err => {

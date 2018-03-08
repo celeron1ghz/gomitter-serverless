@@ -4,7 +4,7 @@ const aws = require('aws-sdk');
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true, region: 'ap-northeast-1' });
 
 vo(function*(){
-    for (const table of ["gomi"]) {
+    for (const table of ["gomi_tweet"]) {
         const data = fs.readFileSync(table + '.json');
         const tweets = JSON.parse(data);
 
