@@ -25,8 +25,8 @@ vo(function*(){
         if (!member_gomi_count[label]) member_gomi_count[label] = 0;
         member_gomi_count[label] += 1;
 
-        if (!member_count[label]) member_count[label] = 0;
-        member_count[label] += 1;
+        if (!member_count[t.member_id]) member_count[t.member_id] = 0;
+        member_count[t.member_id] += 1;
 
         if (!gomi_count[t.gomi_id]) gomi_count[t.gomi_id] = 0;
         gomi_count[t.gomi_id] += 1;
