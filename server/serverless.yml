@@ -55,6 +55,7 @@ functions:
 
 resources:
   Resources:
+    ## tables
     GomiTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -139,6 +140,8 @@ resources:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
 
+
+    ## serve setting
     Bucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -185,3 +188,28 @@ resources:
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
                 OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
+
+
+    ## domain setting
+    Domain:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        CertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
+        DomainName: "gomi-api.camelon.info"
+
+    Mapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName: { Ref: Domain }
+        RestApiId:  { Ref: ApiGatewayRestApi }
+        Stage: dev
+
+    RecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        Name: "gomi-api.camelon.info"
+        Type: A
+        HostedZoneName: "camelon.info."
+        AliasTarget:
+          DNSName: { Fn::GetAtt: [Domain, DistributionDomainName] }
+          HostedZoneId: Z2FDTNDATAQYW2
