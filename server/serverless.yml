@@ -138,3 +138,22 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
+
+    Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+       BucketName: "${self:service}"
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: { Ref: Bucket }
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Principal:
+                AWS: "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${file(./param.js):OAI_ID}"
+              Resource:
+                Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
