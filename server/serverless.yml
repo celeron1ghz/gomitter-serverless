@@ -54,6 +54,7 @@ functions:
           cors: true
 
 resources:
+  Description: Gomitter Serverless
   Resources:
     ## tables
     GomiTable:
@@ -204,7 +205,7 @@ resources:
         RestApiId:  { Ref: ApiGatewayRestApi }
         Stage: dev
 
-    RecordSet:
+    RecordSetOfApi:
       Type: AWS::Route53::RecordSet
       Properties:
         Name: "gomi-api.camelon.info"
@@ -212,4 +213,14 @@ resources:
         HostedZoneName: "camelon.info."
         AliasTarget:
           DNSName: { Fn::GetAtt: [Domain, DistributionDomainName] }
+          HostedZoneId: Z2FDTNDATAQYW2
+
+    RecordSetOfCloudfront:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        Name: "gomi2.camelon.info"
+        Type: A
+        HostedZoneName: "camelon.info."
+        AliasTarget:
+          DNSName: { Fn::GetAtt: [Cloudfront, DomainName] }
           HostedZoneId: Z2FDTNDATAQYW2
