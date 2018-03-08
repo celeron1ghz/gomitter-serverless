@@ -1,4 +1,4 @@
-service: gomitter-server
+service: gomitter
 provider:
   name: aws
   runtime: nodejs6.10
@@ -162,27 +162,27 @@ resources:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
     ## api setting
-    DomainOfCamelon:
+    Domain:
       Type: AWS::ApiGateway::DomainName
       Properties:
         CertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
         DomainName: "gomi-api.camelon.info"
 
-    MappingOfCamelon:
+    Mapping:
       Type: AWS::ApiGateway::BasePathMapping
       Properties:
-        DomainName: { Ref: DomainOfCamelon }
+        DomainName: { Ref: Domain }
         RestApiId:  { Ref: ApiGatewayRestApi }
         Stage: dev
 
-    RecordSetOfServer:
+    RecordSetOfAPI:
       Type: AWS::Route53::RecordSet
       Properties:
         Name: "gomi-api.camelon.info"
         Type: A
         HostedZoneName: "camelon.info."
         AliasTarget:
-          DNSName: { Fn::GetAtt: [DomainOfCamelon, DistributionDomainName] }
+          DNSName: { Fn::GetAtt: [Domain, DistributionDomainName] }
           HostedZoneId: Z2FDTNDATAQYW2
 
     ## gomi.camelon.info setting
@@ -190,7 +190,7 @@ resources:
       Type: AWS::CloudFront::Distribution
       Properties:
         DistributionConfig:
-          Comment: gomitter web assets
+          Comment: gomitter for gomi.camelon.info
           Aliases:
             - "gomi2.camelon.info"
           HttpVersion: http2
@@ -199,7 +199,7 @@ resources:
             SslSupportMethod: sni-only
           DefaultRootObject: index.html
           DefaultCacheBehavior:
-            TargetOriginId: GomitterWebAssets
+            TargetOriginId: GomitterWebAssetsForCamelon
             ViewerProtocolPolicy: allow-all
             ForwardedValues:
               QueryString: true
@@ -210,7 +210,7 @@ resources:
             DefaultTTL: 8640000
           Enabled: true
           Origins:
-            - Id: GomitterWebAssets
+            - Id: GomitterWebAssetsForCamelon
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
                 OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
@@ -230,7 +230,7 @@ resources:
       Type: AWS::CloudFront::Distribution
       Properties:
         DistributionConfig:
-          Comment: gomitter web assets
+          Comment: gomitter for gomi.familiar-life.info
           Aliases:
             - "gomi2.familiar-life.info"
           HttpVersion: http2
