@@ -141,18 +141,7 @@ resources:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
 
-    ## server-side setting
-    RecordSetOfServer:
-      Type: AWS::Route53::RecordSet
-      Properties:
-        Name: "gomi-api.camelon.info"
-        Type: A
-        HostedZoneName: "camelon.info."
-        AliasTarget:
-          DNSName: { Fn::GetAtt: [DomainOfCamelon, DistributionDomainName] }
-          HostedZoneId: Z2FDTNDATAQYW2
-
-    ## client-side setting
+    ## serve bucket setting
     Bucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -172,6 +161,31 @@ resources:
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
+    ## api setting
+    DomainOfCamelon:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        CertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
+        DomainName: "gomi-api.camelon.info"
+
+    MappingOfCamelon:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName: { Ref: DomainOfCamelon }
+        RestApiId:  { Ref: ApiGatewayRestApi }
+        Stage: dev
+
+    RecordSetOfServer:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        Name: "gomi-api.camelon.info"
+        Type: A
+        HostedZoneName: "camelon.info."
+        AliasTarget:
+          DNSName: { Fn::GetAtt: [DomainOfCamelon, DistributionDomainName] }
+          HostedZoneId: Z2FDTNDATAQYW2
+
+    ## gomi.camelon.info setting
     CloudfrontOfCamelon:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -200,19 +214,6 @@ resources:
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
                 OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
-
-    DomainOfCamelon:
-      Type: AWS::ApiGateway::DomainName
-      Properties:
-        CertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
-        DomainName: "gomi-api.camelon.info"
-
-    MappingOfCamelon:
-      Type: AWS::ApiGateway::BasePathMapping
-      Properties:
-        DomainName: { Ref: DomainOfCamelon }
-        RestApiId:  { Ref: ApiGatewayRestApi }
-        Stage: dev
 
     RecordSetOfCamelon:
       Type: AWS::Route53::RecordSet
