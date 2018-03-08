@@ -26,11 +26,11 @@ sls deploy
 
 
 # SETUP CLIENT SIDE
-Using `create-react-app`. Just build and deploy.
+Update assets script available. Just run:
 
 ```
-cd client
-yarn build
-cd build
-aws s3 sync . s3://your-public-bucket --acl public-read
+cd server
+sh refresh-assets.sh
 ```
+
+Running `yarn build`, `aws s3 sync` and `aws cloudfront create-invalidation`.
