@@ -37,7 +37,6 @@ module.exports.main = (event, context, callback) => {
       user = yield dynamodb.get({
         TableName: "twitter_oauth",
         Key: { "uid": sess.sessid },
-        AttributesToGet: ['twitter_id', 'screen_name', 'display_name', 'profile_image_url'],
       }).promise().then(data => data.Item);
     } catch(e) {
       throw e; // maybe dynamodb's internal error

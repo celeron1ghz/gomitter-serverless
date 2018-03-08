@@ -2,6 +2,7 @@
   "dependencies": {
     "aws-sdk": "^2.203.0",
     "jsonwebtoken": "^8.2.0",
+    "twitter": "^1.7.1",
     "vo": "^4.0.2"
   }
 }

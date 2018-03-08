@@ -1,6 +1,8 @@
 const vo = require('vo');
 const crypto = require('crypto');
+const Twitter = require('twitter');
 const aws = require('aws-sdk');
+const ssm = new aws.SSM();
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true });
 
 function md5(val)   {
@@ -13,27 +15,34 @@ class TweetCommand {
   constructor(args,user){
     this.member_id = user.screen_name;
     this.tweet     = args.tweet;
+    this.access_token        = user.access_token;
+    this.access_token_secret = user.access_token_secret;
   }
-
-//    const client = new Twitter({
-//      consumer_key:        sess.consumerKey,
-//      consumer_secret:     sess.consumerSecret,
-//      access_token_key:    sess.tokenKey,
-//      access_token_secret: sess.tokenSecret,
-//    });
-//    const ret = yield client.post('statuses/update', { status: req.body.tweet })
-//        .then(data => null)
-//        .catch(err => `${err[0].message} (${err[0].code})`);
-//
-//    if (ret != null)    {
-//        res.status(403).send(ret);
-//        return;
-//    }
 
   run() {
     const self = this;
 
     return vo(function*(){
+      // first, tweet
+      const key    = (yield ssm.getParameter({ Name: '/twitter_oauth/consumer_key',    WithDecryption: true }).promise() ).Parameter.Value;
+      const secret = (yield ssm.getParameter({ Name: '/twitter_oauth/consumer_secret', WithDecryption: true }).promise() ).Parameter.Value;
+
+      const client = new Twitter({
+        consumer_key:        key,
+        consumer_secret:     secret,
+        access_token_key:    self.access_token,
+        access_token_secret: self.access_token_secret,
+      });
+
+      const ret = yield client.post('statuses/update', { status: self.tweet })
+        .then(data => null)
+        .catch(err => `${err[0].message} (${err[0].code})`);
+
+      if (ret) {
+        console.log("Error on tweet:", ret);
+        return { error: ret };
+      }
+
       // get seq no
       const seq = yield dynamodb.update({
         TableName: 'gomi_sequence2',

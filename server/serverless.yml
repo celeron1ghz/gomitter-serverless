@@ -43,7 +43,7 @@ provider:
       Action:
         - ssm:GetParameter
       Resource:
-        - Fn::Join: [ ":", ["arn:aws:ssm", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "parameter/twitter_oauth/jwt_token"]]
+        - Fn::Join: [ ":", ["arn:aws:ssm", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "parameter/twitter_oauth/*"]]
 functions:
   main:
     handler: handler.main
