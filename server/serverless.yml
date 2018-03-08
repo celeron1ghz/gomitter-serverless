@@ -157,3 +157,31 @@ resources:
                 AWS: "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${file(./param.js):OAI_ID}"
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
+
+    Cloudfront:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Comment: gomitter web assets
+          Aliases:
+            - "gomi2.camelon.info"
+          HttpVersion: http2
+          ViewerCertificate:
+            AcmCertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
+            SslSupportMethod: sni-only
+          DefaultCacheBehavior:
+            TargetOriginId: GomitterWebAssets
+            ViewerProtocolPolicy: allow-all
+            ForwardedValues:
+              QueryString: true
+              Headers:
+                - Origin
+            MinTTL: 86400
+            MaxTTL: 86400
+            DefaultTTL: 86400
+          Enabled: true
+          Origins:
+            - Id: GomitterWebAssets
+              DomainName: "${self:service}.s3.amazonaws.com"
+              S3OriginConfig:
+                OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
