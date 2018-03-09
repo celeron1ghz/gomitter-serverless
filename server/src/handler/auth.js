@@ -11,9 +11,9 @@ const ssm       = new aws.SSM();
 const dynamodb  = new aws.DynamoDB.DocumentClient();
 
 const SESSION_TABLE           = 'gomi_session2';
-const SSM_KEY_JWT_SECRET      = '/twitter_oauth/jwt_token';
-const SSM_KEY_CONSUMER_KEY    = '/twitter_oauth/consumer_key';
-const SSM_KEY_CONSUMER_SECRET = '/twitter_oauth/consumer_secret';
+const SSM_KEY_JWT_SECRET      = '/gomitter/jwt_token';
+const SSM_KEY_CONSUMER_KEY    = '/gomitter/twitter_consumer_key';
+const SSM_KEY_CONSUMER_SECRET = '/gomitter/twitter_consumer_secret';
 
 module.exports.auth = (event, context, callback) => {
   return vo(function*(){

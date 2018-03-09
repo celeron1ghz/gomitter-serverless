@@ -23,7 +23,7 @@ module.exports.main = (event, context, callback) => {
       throw { code: 400, message: 'INVALID_HEADER' };
     }
 
-    const secret = (yield ssm.getParameter({ Name: '/twitter_oauth/jwt_token', WithDecryption: true }).promise() ).Parameter.Value;
+    const secret = (yield ssm.getParameter({ Name: '/gomitter/jwt_token', WithDecryption: true }).promise() ).Parameter.Value;
     let sess;
     try {
       sess = jwt.verify(token, secret);
