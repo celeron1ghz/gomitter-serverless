@@ -35,7 +35,7 @@ module.exports.main = (event, context, callback) => {
     let user;
     try {
       user = yield dynamodb.get({
-        TableName: "twitter_oauth",
+        TableName: "gomi_session2",
         Key: { "uid": sess.sessid },
       }).promise().then(data => data.Item);
     } catch(e) {
