@@ -35,23 +35,29 @@ provider:
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/gomi_count2"]]
 
     - Effect: Allow
-      Action: [dynamodb:GetItem]
+      Action: [ssm:GetParameter]
+      Resource:
+        - Fn::Join: [ ":", ["arn:aws:ssm", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "parameter/twitter_oauth/*"]]
+
+    - Effect: Allow
+      Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:DeleteItem]
       Resource:
         - Fn::Join: [ ":", ["arn:aws:dynamodb", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "table/twitter_oauth"]]
 
-    - Effect: Allow
-      Action:
-        - ssm:GetParameter
-      Resource:
-        - Fn::Join: [ ":", ["arn:aws:ssm", { Ref: AWS::Region }, { Ref: AWS::AccountId }, "parameter/twitter_oauth/*"]]
 functions:
   main:
     handler: handler.gomi
-    events:
-      - http:
-          path: /
-          method: post
-          cors: true
+    events: [{ http: { path: /, method: post, cors: true } }]
+  auth:
+    handler: handler.auth
+    events: [{ http: { path: auth, method: get } }]
+  callback:
+    handler: handler.callback
+    events: [{ http: { path: callback, method: get } }]
+  me:
+    handler: handler.me
+    events: [{ http: { path: me, method: get, cors: true } }]
+
 
 resources:
   Description: Gomitter Serverless

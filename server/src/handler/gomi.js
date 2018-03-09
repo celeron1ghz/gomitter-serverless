@@ -7,9 +7,9 @@ const ssm = new aws.SSM();
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true });
 
 const COMMANDS = {
-  rank:  require('../src/RankGomiCommand'),
-  list:  require('../src/ListGomiCommand'),
-  tweet: require('../src/TweetCommand'),
+  rank:  require('../command/RankGomiCommand'),
+  list:  require('../command/ListGomiCommand'),
+  tweet: require('../command/TweetCommand'),
 };
 
 module.exports.main = (event, context, callback) => {

@@ -20,7 +20,6 @@ class App extends React.Component {
       input: "",
       me: null
     };
-    this.AUTH_ENDPOINT_URL = "https://auth.familiar-life.info";
     this.GOMI_ENDPOINT_URL = "https://gomi-api.camelon.info";
     this.Label = {
       global_hist: "みんなが使ったゴミ",
@@ -110,7 +109,7 @@ class App extends React.Component {
         });
     };
 
-    window.open(this.AUTH_ENDPOINT_URL + "/auth");
+    window.open(this.GOMI_ENDPOINT_URL + "/auth");
     window.addEventListener('message', getJwtToken, false);
   }
 
@@ -128,7 +127,7 @@ class App extends React.Component {
 
     if (!token) return Promise.reject("ログインしてください。(local)");
 
-    return window.fetch(this.AUTH_ENDPOINT_URL + '/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
+    return window.fetch(this.GOMI_ENDPOINT_URL + '/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
       .then(data => data.json())
       .then(data => {
         if (data.error) {
