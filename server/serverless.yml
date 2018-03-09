@@ -213,7 +213,7 @@ resources:
         DistributionConfig:
           Comment: gomitter for gomi.camelon.info
           Aliases:
-            - "gomi2.camelon.info"
+            - "gomi.camelon.info"
           HttpVersion: http2
           ViewerCertificate:
             AcmCertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
@@ -239,7 +239,7 @@ resources:
     RecordSetOfCamelon:
       Type: AWS::Route53::RecordSet
       Properties:
-        Name: "gomi2.camelon.info"
+        Name: "gomi.camelon.info"
         Type: A
         HostedZoneName: "camelon.info."
         AliasTarget:
@@ -253,7 +253,7 @@ resources:
         DistributionConfig:
           Comment: gomitter for gomi.familiar-life.info
           Aliases:
-            - "gomi2.familiar-life.info"
+            - "gomi.familiar-life.info"
           HttpVersion: http2
           ViewerCertificate:
             AcmCertificateArn: "${file(./param.js):FAMILIAR_LIFE_CERT_ARN}"
@@ -279,7 +279,7 @@ resources:
     RecordSetOfFamiliarLife:
       Type: AWS::Route53::RecordSet
       Properties:
-        Name: "gomi2.familiar-life.info"
+        Name: "gomi.familiar-life.info"
         Type: A
         HostedZoneName: "familiar-life.info."
         AliasTarget:
