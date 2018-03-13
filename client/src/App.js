@@ -11,6 +11,7 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
+      oldBrowser: false,
       selectedSearch: null,
       selectedSearchLabel: null,
       tweets: [],
@@ -89,6 +90,17 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    let canPostMessage = false;
+    window.addEventListener('message', e => canPostMessage = true, false);
+    window.postMessage("test", "*");
+
+    setTimeout(() => {
+      if(!canPostMessage) {
+        this.setState({ oldBrowser: true });
+      }
+    },0);
+
+
     this.getUserData()
       .then(this.getSearchResult.bind(this, "global_hist", null))
       .catch(err => {
@@ -184,7 +196,17 @@ class App extends React.Component {
   }
 
   render() {
-    const { tweets, next, count, selectedSearch, selectedSearchLabel, showModal, input, me } = this.state;
+    const { oldBrowser, tweets, next, count, selectedSearch, selectedSearchLabel, showModal, input, me } = this.state;
+
+    if (oldBrowser) {
+      return <div className="container-fiuld text-center">
+        <h2>Gomitter</h2>
+        <h2>└(┐┘)┌ </h2>
+        <br/>
+        <div>クソ古いブラウザなのでGomitterが使えません。<br/>もっと新しいブラウザ使えよ、お前はゴミか？？？？？</div>
+      </div>;
+
+    }
 
     if (me === "") {
       return <div className="container-fiuld text-center">
@@ -256,24 +278,27 @@ class App extends React.Component {
         </Panel.Heading>
         <ListGroup>
           {
-            tweets.map(t =>
-              <ListGroupItem key={t.id} style={{ whiteSpace: "pre" }} onClick={this.tweet.bind(this,t)}>
-                {t.count && <Badge>{t.count}</Badge>}
-                {t.tweet}
-                <div className="text-muted">
-                  {
-                    t.member_id &&
-                      <span><Glyphicon glyph="user"/> {t.member_id}&nbsp;&nbsp;</span>
-                  }
-                  {
-                    t.created_at &&
-                      <span>
-                        <Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toISOString()} ({relativeDate(t.created_at * 1000)})
-                      </span>
-                  }
-                </div>
+            tweets.map(t => {
+              return <ListGroupItem
+                key={t.id}
+                style={{ whiteSpace: t.tweet.split("\n").length === 1 ? "preWrap" : "pre" }}
+                onClick={this.tweet.bind(this,t)}>
+                  {t.count && <Badge>{t.count}</Badge>}
+                  {t.tweet}
+                  <div className="text-muted">
+                    {
+                      t.member_id &&
+                        <span><Glyphicon glyph="user"/> {t.member_id}&nbsp;&nbsp;</span>
+                    }
+                    {
+                      t.created_at &&
+                        <span>
+                          <Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toLocaleString()} ({relativeDate(t.created_at * 1000)})
+                        </span>
+                    }
+                  </div>
               </ListGroupItem>
-            )
+            })
           }
           {
             next &&
