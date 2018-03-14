@@ -93,6 +93,14 @@ class App extends React.Component {
   componentDidMount() {
     Promise.resolve()
       .then(data => {
+        try {
+          if (!window.localStorage) {
+            return Promise.reject("LOCAL_STORAGE_NOT_EXIST");
+          }
+        } catch(err) {
+          return Promise.reject("LOCAL_STORAGE_NOT_EXIST");
+        }
+
         const browser = detect();
         const ver = parseInt(browser.version);
         console.log(browser);
