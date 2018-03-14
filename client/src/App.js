@@ -102,7 +102,7 @@ class App extends React.Component {
         }
 
         const browser = detect();
-        const ver = parseInt(browser.version);
+        const ver = parseInt(browser.version, 10);
         console.log(browser);
 
         if (browser.name === "ie" && ver <= 11) {
@@ -123,7 +123,7 @@ class App extends React.Component {
       .catch(err => {
         console.log("Error on init:", err);
         this.setState({ me: "" });
-      })
+      });
   }
 
   login() {
@@ -318,7 +318,7 @@ class App extends React.Component {
                         </span>
                     }
                   </div>
-              </ListGroupItem>
+              </ListGroupItem>;
             })
           }
           {
