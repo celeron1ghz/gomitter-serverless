@@ -2,6 +2,7 @@ import React from 'react';
 import { Image, Badge, Modal, Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import relativeDate from 'relative-date';
+import { detect } from 'detect-browser';
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/css/bootstrap-theme.min.css';
@@ -90,23 +91,31 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    let canPostMessage = false;
-    window.addEventListener('message', e => canPostMessage = true, false);
-    window.postMessage("test", "*");
+    Promise.resolve()
+      .then(data => {
+        const browser = detect();
+        const ver = parseInt(browser.version);
+        console.log(browser);
 
-    setTimeout(() => {
-      if(!canPostMessage) {
-        this.setState({ oldBrowser: true });
-      }
-    },0);
+        if (browser.name === "ie" && ver <= 11) {
+          return Promise.reject("OLD_BROWSER");
+        }
+      })
+      .catch(err => {
+        console.log("Error on detect:", err);
 
+        if (typeof err === "string") {
+          this.setState({ oldBrowser: detect() });
+        }
 
-    this.getUserData()
+        return Promise.reject(err);
+      })
+      .then(this.getUserData.bind(this))
       .then(this.getSearchResult.bind(this, "global_hist", null))
       .catch(err => {
         console.log("Error on init:", err);
         this.setState({ me: "" });
-      });
+      })
   }
 
   login() {
@@ -203,7 +212,11 @@ class App extends React.Component {
         <h2>Gomitter</h2>
         <h2>└(┐┘)┌ </h2>
         <br/>
-        <div>クソ古いブラウザなのでGomitterが使えません。<br/>もっと新しいブラウザ使えよ、お前はゴミか？？？？？</div>
+        <div>
+          クソブラウザなのでGomitterが使えません。<br/>
+          もっと新しいブラウザ使えよ、お前はゴミか？？？？？<br/>
+          ({oldBrowser.name} {oldBrowser.version})
+        </div>
       </div>;
 
     }
