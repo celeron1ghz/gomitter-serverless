@@ -68,7 +68,7 @@ module.exports.main = (event, context, callback) => {
 
 
     try {
-      console.log("ARGS:", JSON.stringify(body,null,2));
+      console.log("ARGS:", user.screen_name, JSON.stringify(body));
       const ret = yield obj.run();
 
       return callback(null, {
