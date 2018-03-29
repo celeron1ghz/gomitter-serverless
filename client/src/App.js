@@ -138,7 +138,7 @@ class App extends React.Component {
         });
     };
 
-    window.open(this.GOMI_ENDPOINT_URL + "/auth");
+    window.open(this.GOMI_ENDPOINT_URL + "/auth/start");
     window.addEventListener('message', getJwtToken, false);
   }
 
@@ -156,7 +156,7 @@ class App extends React.Component {
 
     if (!token) return Promise.reject("ログインしてください。(local)");
 
-    return window.fetch(this.GOMI_ENDPOINT_URL + '/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
+    return window.fetch(this.GOMI_ENDPOINT_URL + '/auth/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
       .then(data => data.json())
       .then(data => {
         if (data.error) {

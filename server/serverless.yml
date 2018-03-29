@@ -52,13 +52,13 @@ functions:
     events: [{ http: { path: /, method: post, cors: true } }]
   auth:
     handler: handler.auth
-    events: [{ http: { path: auth, method: get } }]
+    events: [{ http: { path: /auth/start, method: get } }]
   callback:
     handler: handler.callback
-    events: [{ http: { path: callback, method: get } }]
+    events: [{ http: { path: /auth/callback, method: get } }]
   me:
     handler: handler.me
-    events: [{ http: { path: me, method: get, cors: true } }]
+    events: [{ http: { path: /auth/me, method: get, cors: true } }]
 
 
 resources:

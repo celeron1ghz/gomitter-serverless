@@ -35,7 +35,7 @@ class TwitterOAuth {
     // fix path for aws's auto-assigned URL and mydomain
     const innerPath = event.path;
     const outerPath = event.requestContext.path;
-    const cbPath    = outerPath.replace(innerPath, "/callback");
+    const cbPath    = outerPath.replace(innerPath, "/auth/callback");
 
     this.oauth = new OAuth(
       'https://api.twitter.com/oauth/request_token',
