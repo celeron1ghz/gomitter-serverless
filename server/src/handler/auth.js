@@ -1,7 +1,5 @@
 'use strict';
 
-const TwitterOAuth = require('../lib/TwitterOAuth');
-
 const jwt       = require('jsonwebtoken');
 const vo        = require('vo');
 const uniqid    = require('uniqid');
@@ -14,6 +12,72 @@ const SESSION_TABLE           = 'gomi_session2';
 const SSM_KEY_JWT_SECRET      = '/gomitter/jwt_token';
 const SSM_KEY_CONSUMER_KEY    = '/gomitter/twitter_consumer_key';
 const SSM_KEY_CONSUMER_SECRET = '/gomitter/twitter_consumer_secret';
+
+const OAuth   = require('oauth').OAuth;
+const Twitter = require('twitter');
+
+class TwitterOAuth {
+  static createInstance(event, keyName, secretName){
+    return vo(function*(){
+      const key    = (yield ssm.getParameter({ Name: keyName,    WithDecryption: true }).promise() ).Parameter.Value;
+      const secret = (yield ssm.getParameter({ Name: secretName, WithDecryption: true }).promise() ).Parameter.Value;
+      return new TwitterOAuth(event, key, secret);
+    }).catch(err => {
+      console.log("Error on creating oauth object:", err);
+      throw err;
+    });
+  }
+
+  constructor(event, key, secret) {
+    this.consumer_key    = key;
+    this.consumer_secret = secret;
+
+    // fix path for aws's auto-assigned URL and mydomain
+    const innerPath = event.path;
+    const outerPath = event.requestContext.path;
+    const cbPath    = outerPath.replace(innerPath, "/callback");
+
+    this.oauth = new OAuth(
+      'https://api.twitter.com/oauth/request_token',
+      'https://api.twitter.com/oauth/access_token',
+      key,
+      secret,
+      '1.0A',
+      'https://' + event.headers.Host + cbPath,
+      'HMAC-SHA1'
+    );
+  }
+
+  getOAuthRequestToken() {
+    return new Promise((resolve, reject) => {
+      this.oauth.getOAuthRequestToken((error, oauth_token, oauth_token_secret, results) => {
+        if (error) { reject(error) }
+        else       { resolve({ oauth_token, oauth_token_secret, results })  }
+      });
+    });
+  }
+
+  getOAuthAccessToken(token, secret, verifier) {
+    return new Promise((resolve,reject) => {
+      this.oauth.getOAuthAccessToken(token, secret, verifier, (error, access_token, access_token_secret, results) => {
+        if (error) { reject(error) }
+        else       { resolve({ access_token, access_token_secret, results })  }
+      });
+    })
+  }
+
+  call_get_api(token, token_secret, path, param) {
+    const client = new Twitter({
+      consumer_key:         this.consumer_key,
+      consumer_secret:      this.consumer_secret,
+      access_token_key:     token,
+      access_token_secret:  token_secret,
+    });
+
+    return client.get(path, param);
+  }
+}
+
 
 module.exports.auth = (event, context, callback) => {
   return vo(function*(){
