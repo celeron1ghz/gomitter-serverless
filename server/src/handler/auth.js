@@ -8,11 +8,6 @@ const aws       = require('aws-sdk');
 const ssm       = new aws.SSM();
 const dynamodb  = new aws.DynamoDB.DocumentClient();
 
-const SESSION_TABLE           = 'gomi_session2';
-const SSM_KEY_JWT_SECRET      = '/gomitter/jwt_token';
-const SSM_KEY_CONSUMER_KEY    = '/gomitter/twitter_consumer_key';
-const SSM_KEY_CONSUMER_SECRET = '/gomitter/twitter_consumer_secret';
-
 const OAuth   = require('oauth').OAuth;
 const Twitter = require('twitter');
 
@@ -78,8 +73,12 @@ class TwitterOAuth {
   }
 }
 
+const SESSION_TABLE           = 'gomi_session2';
+const SSM_KEY_JWT_SECRET      = '/gomitter/jwt_token';
+const SSM_KEY_CONSUMER_KEY    = '/gomitter/twitter_consumer_key';
+const SSM_KEY_CONSUMER_SECRET = '/gomitter/twitter_consumer_secret';
 const ROUTE = {
-  auth: (event, context, callback) => {
+  start: (event, context, callback) => {
     return vo(function*(){
       const uid   = uniqid();
       const oauth = yield TwitterOAuth.createInstance(event, SSM_KEY_CONSUMER_KEY, SSM_KEY_CONSUMER_SECRET);
@@ -231,6 +230,14 @@ const ROUTE = {
   },
 };
 
-module.exports.auth = ROUTE.auth;
-module.exports.me = ROUTE.me;
-module.exports.callback = ROUTE.callback;
+module.exports.auth = (event, context, callback) => {
+  const action = event.path.split('/')[2];
+  const method = ROUTE[action];
+
+  if (method) {
+    method(event, context, callback);
+  } else {
+    console.log("Unknown path:", event.path);
+    callback("NG");
+  }
+};
