@@ -19,8 +19,8 @@ const Twitter = require('twitter');
 class TwitterOAuth {
   static createInstance(event, keyName, secretName){
     return vo(function*(){
-      const key    = (yield ssm.getParameter({ Name: keyName,    WithDecryption: true }).promise() ).Parameter.Value;
-      const secret = (yield ssm.getParameter({ Name: secretName, WithDecryption: true }).promise() ).Parameter.Value;
+      const key    = yield ssm.getParameter({ Name: keyName,    WithDecryption: true }).promise().then(d => d.Parameter.Value);
+      const secret = yield ssm.getParameter({ Name: secretName, WithDecryption: true }).promise().then(d => d.Parameter.Value);
       return new TwitterOAuth(event, key, secret);
     }).catch(err => {
       console.log("Error on creating oauth object:", err);
@@ -63,7 +63,7 @@ class TwitterOAuth {
         if (error) { reject(error) }
         else       { resolve({ access_token, access_token_secret, results })  }
       });
-    })
+    });
   }
 
   call_get_api(token, token_secret, path, param) {
@@ -77,7 +77,6 @@ class TwitterOAuth {
     return client.get(path, param);
   }
 }
-
 
 module.exports.auth = (event, context, callback) => {
   return vo(function*(){
@@ -145,7 +144,7 @@ module.exports.callback = (event, context, callback) => {
       },
     }).promise();
 
-    const secret = (yield ssm.getParameter({ Name: SSM_KEY_JWT_SECRET, WithDecryption: true }).promise() ).Parameter.Value;
+    const secret = yield ssm.getParameter({ Name: SSM_KEY_JWT_SECRET, WithDecryption: true }).promise().then(d => d.Parameter.Value);
     const signed = jwt.sign({ sessid: sessid }, secret);
 
     return callback(null, {
