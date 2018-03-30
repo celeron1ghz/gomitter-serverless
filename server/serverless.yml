@@ -224,6 +224,7 @@ resources:
             MinTTL: 8640000
             MaxTTL: 8640000
             DefaultTTL: 8640000
+            ViewerProtocolPolicy: redirect-to-https
           Enabled: true
           Origins:
             - Id: GomitterWebAssetsForCamelon
@@ -264,6 +265,7 @@ resources:
             MinTTL: 8640000
             MaxTTL: 8640000
             DefaultTTL: 8640000
+            ViewerProtocolPolicy: redirect-to-https
           Enabled: true
           Origins:
             - Id: GomitterWebAssetsForFamiliarLife
