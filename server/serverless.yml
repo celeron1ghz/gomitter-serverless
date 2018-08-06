@@ -184,7 +184,7 @@ resources:
             - Effect: Allow
               Action: s3:GetObject
               Principal:
-                AWS: "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${file(./param.js):OAI_ID}"
+                AWS: "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${ssm:/app/gomitter/oai_id~true}"
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
@@ -192,7 +192,7 @@ resources:
     Domain:
       Type: AWS::ApiGateway::DomainName
       Properties:
-        CertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
+        CertificateArn: "${ssm:/acm/camelon.info~true}"
         DomainName: "gomi-api.camelon.info"
 
     Mapping:
@@ -222,7 +222,7 @@ resources:
             - "gomi.camelon.info"
           HttpVersion: http2
           ViewerCertificate:
-            AcmCertificateArn: "${file(./param.js):CAMELON_CERT_ARN}"
+            AcmCertificateArn: "${ssm:/acm/camelon.info~true}"
             SslSupportMethod: sni-only
           DefaultRootObject: index.html
           DefaultCacheBehavior:
@@ -240,7 +240,7 @@ resources:
             - Id: GomitterWebAssetsForCamelon
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
-                OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
+                OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id~true}"
         Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     RecordSetOfCamelon:
@@ -263,7 +263,7 @@ resources:
             - "gomi.familiar-life.info"
           HttpVersion: http2
           ViewerCertificate:
-            AcmCertificateArn: "${file(./param.js):FAMILIAR_LIFE_CERT_ARN}"
+            AcmCertificateArn: "${ssm:/acm/familiar-life.info}"
             SslSupportMethod: sni-only
           DefaultRootObject: index.html
           DefaultCacheBehavior:
@@ -281,7 +281,7 @@ resources:
             - Id: GomitterWebAssetsForFamiliarLife
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
-                OriginAccessIdentity: "origin-access-identity/cloudfront/${file(./param.js):OAI_ID}"
+                OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id~true}"
         Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     RecordSetOfFamiliarLife:
