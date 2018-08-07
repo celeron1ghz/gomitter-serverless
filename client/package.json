@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "aws-amplify": "^1.0.4",
+    "aws-amplify-react": "^1.0.4",
     "bootstrap": "3.3.7",
     "detect-browser": "^2.1.0",
     "font-awesome": "^4.7.0",
