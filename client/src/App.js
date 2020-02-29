@@ -3,7 +3,6 @@ import { Image, Badge, Modal, Button, ButtonToolbar, DropdownButton, MenuItem, L
 import FontAwesome from 'react-fontawesome';
 import relativeDate from 'relative-date';
 import { detect } from 'detect-browser';
-import { Analytics } from 'aws-amplify';
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/css/bootstrap-theme.min.css';
@@ -38,7 +37,6 @@ class App extends React.Component {
     this.login        = this.login.bind(this);
     this.logout       = this.logout.bind(this);
     this.reload       = this.reload.bind(this);
-    this.pinpoint     = this.pinpoint.bind(this);
   }
 
   onChange(e){
@@ -55,20 +53,6 @@ class App extends React.Component {
 
   closeModal() {
     this.setState({ showModal: false });
-  }
-
-  pinpoint(type,args) {
-    const { me } = this.state;
-
-    if (!args) {
-      args = {};
-    }
-
-    if (!args.user) {
-      args.user = me ? me.screen_name : null;
-    }
-
-    Analytics.record({ name: type, attributes: args });
   }
 
   apiCall(param) {
@@ -88,7 +72,6 @@ class App extends React.Component {
       .then(data => {
         if (data.error === "EXPIRED") {
           console.log("Error on access to API:", data);
-          this.pinpoint('expired');
           alert("セッションが切れました。再度ログインしてください。");
           this.setState({ me: "" });
           return;
@@ -96,7 +79,6 @@ class App extends React.Component {
 
         if (data.error) {
           console.log("API_ERROR", data);
-          this.pinpoint('error_api');
           alert(`リクエストでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${data.error})`);
         } else {
           return data;
@@ -104,13 +86,11 @@ class App extends React.Component {
       })
       .catch(err => {
         console.log("SERVER_ERROR", err);
-        this.pinpoint('error_server');
         alert(`サーバでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${err.message})`);
       });
   }
 
   componentDidMount() {
-    this.pinpoint('load');
     Promise.resolve()
       .then(data => {
         try {
@@ -126,7 +106,6 @@ class App extends React.Component {
         console.log(browser);
 
         if (browser.name === "ie" && ver <= 11) {
-          this.pinpoint('error_browser', { name: browser.name, ver: ver });
           return Promise.reject("OLD_BROWSER");
         }
       })
@@ -159,14 +138,12 @@ class App extends React.Component {
         });
     };
 
-    this.pinpoint('login');
     window.open(this.GOMI_ENDPOINT_URL + "/auth/start");
     window.addEventListener('message', getJwtToken, false);
   }
 
   logout() {
     const { me } = this.state;
-    this.pinpoint('logout');
 
     if (window.confirm('ログアウトしますか？')) {
       window.localStorage.clear();
@@ -180,7 +157,6 @@ class App extends React.Component {
     const token = window.localStorage.getItem("token");
     if (!token) return Promise.reject("ログインしてください。(local)");
 
-    this.pinpoint('api', { command: 'me' });
     return window.fetch(this.GOMI_ENDPOINT_URL + '/auth/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
       .then(data => data.json())
       .then(data => {
@@ -195,7 +171,6 @@ class App extends React.Component {
 
   getSearchResult(type, next){
     const { me, selectedSearch, tweets } = this.state;
-    this.pinpoint('api', { command: type });
 
     let param;
     if (type === "global_hist") param = { command: "list" };
@@ -223,19 +198,16 @@ class App extends React.Component {
 
   reload() {
     const { selectedSearch } = this.state;
-    this.pinpoint('api', { command: 'reload' });
     this.getSearchResult(selectedSearch, null);
   }
 
   tweet(tweet) {
     if (window.confirm(tweet.tweet)) {
-      this.pinpoint('api', { command: 'tweet' });
       this.apiCall({ command: 'tweet', tweet: tweet.tweet }).then(data => {
         alert('OK');
         this.closeModal();
       });
     } else {
-      this.pinpoint('api', { command: 'tweet_cancel' });
       alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
     }
   }
