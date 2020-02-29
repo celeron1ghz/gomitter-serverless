@@ -1,363 +1,398 @@
-import React from 'react';
-import { Image, Badge, Modal, Button, ButtonToolbar, DropdownButton, MenuItem, ListGroup, ListGroupItem, FormControl, Glyphicon, Panel, Well } from 'react-bootstrap';
-import FontAwesome from 'react-fontawesome';
-import relativeDate from 'relative-date';
-import { detect } from 'detect-browser';
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  Image,
+  Badge,
+  Modal,
+  Button,
+  ButtonToolbar,
+  DropdownButton,
+  MenuItem,
+  ListGroup,
+  ListGroupItem,
+  FormControl,
+  Glyphicon,
+  Panel,
+  Well
+} from "react-bootstrap";
+import FontAwesome from "react-fontawesome";
+import relativeDate from "relative-date";
 
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import '../node_modules/bootstrap/dist/css/bootstrap-theme.min.css';
-import '../node_modules/font-awesome/css/font-awesome.min.css';
+import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import "../node_modules/bootstrap/dist/css/bootstrap-theme.min.css";
+import "../node_modules/font-awesome/css/font-awesome.min.css";
 
-class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      oldBrowser: false,
-      selectedSearch: null,
-      selectedSearchLabel: null,
-      tweets: [],
-      count: null,
-      next: null,
-      showModal: false,
-      input: "",
-      me: null
-    };
-    this.GOMI_ENDPOINT_URL = "https://gomi-api.camelon.info";
-    this.Label = {
-      global_hist: "みんなが使ったゴミ",
-      global_rank: "みんながよく使うゴミ",
-      my_hist: "自分が使ったゴミ",
-      my_rank: "自分がよく使うゴミ",
-    };
+const GOMI_ENDPOINT_URL = "https://gomi-api.camelon.info";
 
-    this.tweet        = this.tweet.bind(this);
-    this.openModal    = this.openModal.bind(this);
-    this.closeModal   = this.closeModal.bind(this);
-    this.inputUpdate  = this.inputUpdate.bind(this);
-    this.login        = this.login.bind(this);
-    this.logout       = this.logout.bind(this);
-    this.reload       = this.reload.bind(this);
+function gomiUserDataApi() {
+  const token = window.localStorage.getItem("token");
+
+  if (!token) {
+    return Promise.reject("ログインしてください。(local)");
   }
 
-  onChange(e){
-    this.getSearchResult(e.target.value);
+  return window
+    .fetch(GOMI_ENDPOINT_URL + "/auth/me", {
+      headers: new window.Headers({ Authorization: "Bearer " + token })
+    })
+    .then(data => data.json())
+    .then(data => {
+      if (data.error) {
+        return Promise.reject(`ログインしてください。(auth:${data.error})`);
+      }
+
+      return data;
+    });
+}
+
+function gomiDataApi(param) {
+  const token = window.localStorage.getItem("token");
+
+  if (!token) {
+    alert("ログインしてください。");
+    return;
   }
 
-  inputUpdate(e) {
-    this.setState({ input: e.target.value });
-  }
-
-  openModal() {
-    this.setState({ showModal: true });
-  }
-
-  closeModal() {
-    this.setState({ showModal: false });
-  }
-
-  apiCall(param) {
-    const token = window.localStorage.getItem("token");
-
-    if (!token) {
-      alert("ログインしてください。");
-      this.setState({ me: "" });
-      return;
-    }
-
-    return window.fetch(this.GOMI_ENDPOINT_URL, {
-      method: 'POST',
+  return window
+    .fetch(GOMI_ENDPOINT_URL, {
+      method: "POST",
       body: JSON.stringify(param),
-      headers: new window.Headers({ 'Authorization': "Bearer " + token }),
-    }).then(data => data.json())
-      .then(data => {
-        if (data.error === "EXPIRED") {
-          console.log("Error on access to API:", data);
-          alert("セッションが切れました。再度ログインしてください。");
-          this.setState({ me: "" });
-          return;
-        }
+      headers: new window.Headers({ Authorization: "Bearer " + token })
+    })
+    .then(data => data.json())
+    .then(data => {
+      if (data.error === "EXPIRED") {
+        console.log("Error on access to API:", data);
+        alert("セッションが切れました。再度ログインしてください。");
+        return;
+      }
 
-        if (data.error) {
-          console.log("API_ERROR", data);
-          alert(`リクエストでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${data.error})`);
-        } else {
-          return data;
-        }
-      })
-      .catch(err => {
-        console.log("SERVER_ERROR", err);
-        alert(`サーバでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${err.message})`);
-      });
-  }
-
-  componentDidMount() {
-    Promise.resolve()
-      .then(data => {
-        try {
-          if (!window.localStorage) {
-            return Promise.reject("LOCAL_STORAGE_NOT_EXIST");
-          }
-        } catch(err) {
-          return Promise.reject("LOCAL_STORAGE_NOT_EXIST");
-        }
-
-        const browser = detect();
-        const ver = parseInt(browser.version, 10);
-        console.log(browser);
-
-        if (browser.name === "ie" && ver <= 11) {
-          return Promise.reject("OLD_BROWSER");
-        }
-      })
-      .catch(err => {
-        console.log("Error on detect:", err);
-
-        if (typeof err === "string") {
-          this.setState({ oldBrowser: detect() });
-        }
-
-        return Promise.reject(err);
-      })
-      .then(this.getUserData.bind(this))
-      .then(this.getSearchResult.bind(this, "global_hist", null))
-      .catch(err => {
-        console.log("Error on init:", err);
-        this.setState({ me: "" });
-      });
-  }
-
-  login() {
-    const getJwtToken = event => {
-      window.localStorage.setItem("token", event.data);
-
-      this.getUserData()
-        .then(this.getSearchResult.bind(this, "global_hist", null))
-        .catch(err => {
-          alert(err);
-          this.setState({ me: "" });
-        });
-    };
-
-    window.open(this.GOMI_ENDPOINT_URL + "/auth/start");
-    window.addEventListener('message', getJwtToken, false);
-  }
-
-  logout() {
-    const { me } = this.state;
-
-    if (window.confirm('ログアウトしますか？')) {
-      window.localStorage.clear();
-      this.setState({ me: "" });
-    } else {
-      alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
-    }
-  }
-
-  getUserData() {
-    const token = window.localStorage.getItem("token");
-    if (!token) return Promise.reject("ログインしてください。(local)");
-
-    return window.fetch(this.GOMI_ENDPOINT_URL + '/auth/me', { headers: new window.Headers({ 'Authorization': "Bearer " + token }) })
-      .then(data => data.json())
-      .then(data => {
-        if (data.error) {
-          return Promise.reject(`ログインしてください。(auth:${data.error})`);
-        }
-
-        this.setState({ me: data });
+      if (data.error) {
+        console.log("API_ERROR", data);
+        alert(
+          `リクエストでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${data.error})`
+        );
+      } else {
         return data;
-      });
-  }
+      }
+    })
+    .catch(err => {
+      console.log("SERVER_ERROR", err);
+      alert(
+        `サーバでエラーが発生しました。再読み込みして解決しない場合はあきらめてください。(gomi:${err.message})`
+      );
+    });
+}
 
-  getSearchResult(type, next){
-    const { me, selectedSearch, tweets } = this.state;
+const Label = {
+  global_hist: "みんなが使ったゴミ",
+  global_rank: "みんながよく使うゴミ",
+  my_hist: "自分が使ったゴミ",
+  my_rank: "自分がよく使うゴミ"
+};
 
+function App() {
+  // variables
+  const [me, setMe] = useState();
+  const [tweets, setTweets] = useState([]);
+  const [next, setNext] = useState();
+  const [count, setCount] = useState();
+  const [selectedSearch, setSelectedSearch] = useState("global_hist");
+  const [showModal, setShowModal] = useState();
+  const [input, setInput] = useState("");
+
+  function searchGomi(type, next) {
     let param;
     if (type === "global_hist") param = { command: "list" };
-    if (type === "my_hist")     param = { command: "list", me: 1 };
+    if (type === "my_hist") param = { command: "list", me: 1 };
     if (type === "global_rank") param = { command: "rank" };
-    if (type === "my_rank")     param = { command: "rank", me: 1 };
+    if (type === "my_rank") param = { command: "rank", me: 1 };
 
+    console.log(type);
     param.next = next;
 
     console.log("SEARCH_PARAM", param);
 
-    return this.apiCall(param).then(data => {
+    return gomiDataApi(param).then(data => {
       if (!data) return;
 
       if (type === selectedSearch && next) {
         tweets.push(...data.tweets);
+        setTweets(tweets);
         console.log("APPEND_TWEET", tweets.length);
-        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: tweets, next: data.next, count: data.count });
       } else {
+        setTweets(data.tweets);
         console.log("PUT_TWEET", data.tweets.length);
-        this.setState({ selectedSearch: type, selectedSearchLabel: this.Label[type], tweets: data.tweets, next: data.next, count: data.count });
       }
+
+      setSelectedSearch(type);
+      setNext(data.next);
+      setCount(data.count);
     });
   }
 
-  reload() {
-    const { selectedSearch } = this.state;
-    this.getSearchResult(selectedSearch, null);
-  }
+  // functions
+  const openModal = useCallback(() => {
+    setShowModal(true);
+  }, []);
 
-  tweet(tweet) {
+  const closeModal = useCallback(() => {
+    setShowModal(false);
+  }, []);
+
+  const inputUpdate = useCallback(e => {
+    setInput(e.target.value);
+  }, []);
+
+  const pulldownChange = e => {
+    searchGomi(e.target.value, null).catch(err => {
+      console.log(err);
+    });
+  };
+
+  const reload = () => {
+    searchGomi(selectedSearch, null).catch(err => {
+      console.log(err);
+    });
+  };
+
+  const loadNext = () => {
+    searchGomi(selectedSearch, next).catch(err => {
+      console.log(err);
+    });
+  };
+
+  const login = () => {
+    let getJwtToken;
+    getJwtToken = event => {
+      window.removeEventListener("message", getJwtToken, false);
+      window.localStorage.setItem("token", event.data);
+
+      gomiUserDataApi()
+        .then(data => {
+          setMe(data);
+          return searchGomi(selectedSearch, null);
+        })
+        .catch(err => {
+          setMe("");
+          alert(err);
+        });
+    };
+
+    window.open(GOMI_ENDPOINT_URL + "/auth/start");
+    window.addEventListener("message", getJwtToken, false);
+  };
+
+  const logout = useCallback(() => {
+    if (window.confirm("ログアウトしますか？")) {
+      window.localStorage.clear();
+      setMe("");
+    } else {
+      alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
+    }
+  }, []);
+
+  const tweet = tweet => {
     if (window.confirm(tweet.tweet)) {
-      this.apiCall({ command: 'tweet', tweet: tweet.tweet }).then(data => {
-        alert('OK');
-        this.closeModal();
+      gomiDataApi({ command: "tweet", tweet: tweet.tweet }).then(data => {
+        alert("OK");
+        closeModal();
       });
     } else {
       alert("じゃあクリックするなよ（ﾌﾟﾝｽｺ");
     }
+  };
+
+  useEffect(() => {
+    if (!window.localStorage) {
+      throw new Error("LOCAL_STORAGE_NOT_EXIST");
+    }
+
+    gomiUserDataApi()
+      .then(data => {
+        setMe(data);
+        return searchGomi(selectedSearch, null);
+      })
+      .catch(err => {
+        setMe("");
+        console.log(err);
+      });
+  }, []);
+
+  if (me === undefined) {
+    return (
+      <div className="text-center">
+        <h1>
+          <FontAwesome name="spinner" spin pulse={true} /> Loading...
+        </h1>
+      </div>
+    );
   }
 
-  render() {
-    const { oldBrowser, tweets, next, count, selectedSearch, selectedSearchLabel, showModal, input, me } = this.state;
-
-    if (oldBrowser) {
-      return <div className="container-fiuld text-center">
+  if (me === "") {
+    return (
+      <div className="container-fiuld text-center">
         <h2>Gomitter</h2>
         <h2>└(┐┘)┌ </h2>
-        <br/>
-        <div>
-          クソブラウザなのでGomitterが使えません。<br/>
-          もっと新しいブラウザ使えよ、お前はゴミか？？？？？<br/>
-          ({oldBrowser.name} {oldBrowser.version})
-        </div>
-      </div>;
-
-    }
-
-    if (me === "") {
-      return <div className="container-fiuld text-center">
-        <h2>Gomitter</h2>
-        <h2>└(┐┘)┌ </h2>
-        <br/>
+        <br />
         <div className="text-muted">Make your timeline garble.</div>
-        <br/>
-        <Button bsStyle="primary" onClick={this.login}><FontAwesome name="twitter"/> Login via Twitter</Button>
-      </div>;
-    }
+        <br />
+        <Button bsStyle="primary" onClick={login}>
+          <FontAwesome name="twitter" /> Login via Twitter
+        </Button>
+      </div>
+    );
+  }
 
-    if (!me) {
-      return <div className="text-center">
-        <h1><FontAwesome name="spinner" spin pulse={true} /> Loading...</h1>
-      </div>;
-    }
-
-    return <div className="container">
-      <br/>
+  return (
+    <div className="container">
+      <br />
       <Well bsSize="small" className="clearfix">
         <span onClick={() => alert("バーーーカwwwwwwwwwwwwwwwwwwww")}>
-          <Glyphicon glyph="trash"/>
-          Gomitter
-          <Glyphicon glyph="trash"/>
+          <Glyphicon glyph="trash" />
+          Gomitter <Glyphicon glyph="trash" />
         </span>
         <div className="pull-right">
           {
             <ButtonToolbar>
-              <DropdownButton pullRight
+              <DropdownButton
+                pullRight
                 bsStyle="primary"
                 bsSize="xsmall"
                 id="dropdown-size-extra-small"
-                title={<span><FontAwesome name="twitter"/> {me.screen_name}</span>}>
-                  <MenuItem eventKey="0" onClick={() => alert("はずれ")}>
-                    {me.display_name + ' '}
-                    <Image circle src={me.profile_image_url} style={{width: "32px", height: "32px", border: "1px solid gray" }}/>
-                  </MenuItem>
-                  <MenuItem divider />
-                  <MenuItem eventKey="1" onClick={this.openModal}><Glyphicon glyph="plus"/> 新規ツイート</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem eventKey="2" onClick={this.logout}><Glyphicon glyph="log-out"/> ログアウト</MenuItem>
+                title={
+                  <>
+                    <FontAwesome name="twitter" /> {me.screen_name}
+                  </>
+                }
+              >
+                <MenuItem eventKey="0" onClick={() => alert("はずれ")}>
+                  {me.display_name + " "}
+                  <Image
+                    circle
+                    src={me.profile_image_url}
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      border: "1px solid gray"
+                    }}
+                  />
+                </MenuItem>
+                <MenuItem divider />
+                <MenuItem eventKey="1" onClick={openModal}>
+                  <Glyphicon glyph="plus" /> 新規のゴミ
+                </MenuItem>
+                <MenuItem divider />
+                <MenuItem eventKey="2" onClick={logout}>
+                  <Glyphicon glyph="log-out" /> ログアウト
+                </MenuItem>
               </DropdownButton>
             </ButtonToolbar>
           }
         </div>
       </Well>
-
       <Panel bsStyle="info">
-        <Panel.Heading><Glyphicon glyph="search"/> 検索するゴミの条件</Panel.Heading>
+        <Panel.Heading>
+          <Glyphicon glyph="search" /> 検索するゴミの条件
+        </Panel.Heading>
         <Panel.Body>
-          <FormControl componentClass="select" placeholder="select" onChange={this.onChange.bind(this)}>
-            <option value="global_hist">みんなが使ったゴミ</option>
-            <option value="global_rank">みんながよく使うゴミ</option>
-            <option value="my_hist">自分が使ったゴミ</option>
-            <option value="my_rank">自分がよく使うゴミ</option>
+          <FormControl
+            componentClass="select"
+            placeholder="select"
+            onChange={pulldownChange}
+          >
+            <option value="global_hist"> みんなが使ったゴミ </option>
+            <option value="global_rank"> みんながよく使うゴミ </option>
+            <option value="my_hist"> 自分が使ったゴミ </option>
+            <option value="my_rank"> 自分がよく使うゴミ </option>
           </FormControl>
         </Panel.Body>
       </Panel>
-
       <Panel bsStyle="default">
         <Panel.Heading>
-          <Glyphicon glyph="trash"/>
-          {' '}
-          {selectedSearchLabel || '読み込み中...'}
-          {' '}
-          <Badge>{count}</Badge>
-          <div className="pull-right" onClick={this.reload}><Glyphicon glyph="refresh"/></div>
+          <Glyphicon glyph="trash" />
+          {selectedSearch ? Label[selectedSearch] : "読み込み中..."}
+          {count ? <Badge> {count} </Badge> : ""}
+          <div className="pull-right" onClick={reload}>
+            <Glyphicon glyph="refresh" />
+          </div>
         </Panel.Heading>
         <ListGroup>
-          {
-            tweets.map(t => {
-              return <ListGroupItem
+          {tweets.map(t => {
+            return (
+              <ListGroupItem
                 key={t.id}
-                style={{ whiteSpace: t.tweet.split("\n").length === 1 ? "preWrap" : "pre" }}
-                onClick={this.tweet.bind(this,t)}>
-                  {t.count && <Badge>{t.count}</Badge>}
-                  {t.tweet}
-                  <div className="text-muted">
-                    {
-                      t.member_id &&
-                        <span><Glyphicon glyph="user"/> {t.member_id}&nbsp;&nbsp;</span>
-                    }
-                    {
-                      t.created_at &&
-                        <span>
-                          <Glyphicon glyph="time"/> {new Date(t.created_at * 1000).toLocaleString()} ({relativeDate(t.created_at * 1000)})
-                        </span>
-                    }
-                  </div>
-              </ListGroupItem>;
-            })
-          }
-          {
-            next &&
-              <ListGroupItem className="text-center text-muted">
-                <span onClick={this.getSearchResult.bind(this, selectedSearch, next)}>
-                  <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
-                  Load Next
-                  <Glyphicon glyph="triangle-right"/><Glyphicon glyph="triangle-right"/>
-                </span>
+                style={{
+                  whiteSpace:
+                    t.tweet.split("\n").length === 1 ? "preWrap" : "pre"
+                }}
+                onClick={() => tweet(t)}
+              >
+                {t.count && <Badge> {t.count} </Badge>} {t.tweet}
+                <div className="text-muted">
+                  {t.member_id && (
+                    <span>
+                      <Glyphicon glyph="user" /> {t.member_id} &nbsp; &nbsp;
+                    </span>
+                  )}
+                  {t.created_at && (
+                    <span>
+                      <Glyphicon glyph="time" />
+                      {new Date(t.created_at * 1000).toLocaleString()}(
+                      {relativeDate(t.created_at * 1000)})
+                    </span>
+                  )}
+                </div>
               </ListGroupItem>
-          }
-          {
-            !next &&
-              <ListGroupItem className="text-center text-muted">
-                <span onClick={() => alert("最後だって言ってるだろ！！！！（ﾌﾞﾁｷﾞﾚ")}>
-                  <Glyphicon glyph="trash"/> 最後だよ <Glyphicon glyph="trash"/>
-                </span>
-              </ListGroupItem>
-          }
+            );
+          })}
+          {next && (
+            <ListGroupItem className="text-center text-muted">
+              <span onClick={loadNext}>
+                <Glyphicon glyph="triangle-right" />
+                <Glyphicon glyph="triangle-right" />
+                Load Next <Glyphicon glyph="triangle-right" />
+                <Glyphicon glyph="triangle-right" />
+              </span>
+            </ListGroupItem>
+          )}
+          {!next && (
+            <ListGroupItem className="text-center text-muted">
+              <span
+                onClick={() => alert("最後だって言ってるだろ！！！！（ﾌﾞﾁｷﾞﾚ")}
+              >
+                <Glyphicon glyph="trash" /> 最後だよ <Glyphicon glyph="trash" />
+              </span>
+            </ListGroupItem>
+          )}
         </ListGroup>
       </Panel>
-
-      <Modal show={showModal} onHide={this.closeModal}>
+      <Modal show={showModal} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>
-            <Glyphicon glyph="plus"/> 新規にゴミをつくる ({input.length}/140)
+            <Glyphicon glyph="plus" /> 新規にゴミをつくる({input.length}
+            /140)
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <FormControl componentClass="textarea" placeholder="(ゴミを入力)" rows={10} onChange={this.inputUpdate} value={input}/>
+          <FormControl
+            componentClass="textarea"
+            placeholder="(ゴミを入力)"
+            rows={10}
+            onChange={inputUpdate}
+            value={input}
+          />
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={this.closeModal}><Glyphicon glyph="remove"/> 閉じる</Button>
-          <Button bsStyle="primary" onClick={this.tweet.bind(this,{ tweet: input })}><FontAwesome name="twitter"/> Tweet</Button>
+          <Button onClick={closeModal}>
+            <Glyphicon glyph="remove" /> 閉じる
+          </Button>
+          <Button bsStyle="primary" onClick={() => tweet({ tweet: input })}>
+            <FontAwesome name="twitter" /> Tweet
+          </Button>
         </Modal.Footer>
       </Modal>
-    </div>;
-  }
+    </div>
+  );
 }
 
 export default App;
