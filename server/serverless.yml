@@ -1,7 +1,9 @@
 service: gomitter
+variablesResolutionMode: 20210326
+
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs14.x
   stage: dev
   region: ap-northeast-1
   deploymentBucket: serverless-upload-ap-northeast-1
@@ -50,12 +52,10 @@ functions:
   main:
     handler: handler.gomi
     description: gomitter application
-    tags: { Application: Gomitter }
     events: [{ http: { path: "/", method: post, cors: true } }]
   auth:
     handler: handler.auth
     description: gomitter authentication
-    tags: { Application: Gomitter }
     events: [{ http: { path: "/auth/{action}", method: get, cors: true } }]
 
 resources:
@@ -76,7 +76,6 @@ resources:
         TimeToLiveSpecification:
           AttributeName: ttl
           Enabled: true
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     GomiTable:
       Type: AWS::DynamoDB::Table
@@ -89,7 +88,6 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     GomiRankTable:
       Type: AWS::DynamoDB::Table
@@ -115,7 +113,6 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     GomiCountTable:
       Type: AWS::DynamoDB::Table
@@ -128,7 +125,6 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     GomiSequenceTable:
       Type: AWS::DynamoDB::Table
@@ -141,7 +137,6 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     GomiTweetTable:
       Type: AWS::DynamoDB::Table
@@ -165,14 +160,12 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
 
     ## serve bucket setting
     Bucket:
       Type: AWS::S3::Bucket
       Properties:
-       BucketName: "${self:service}"
-       Tags: [{ Key: "Application", Value: "Gomitter" }]
+        BucketName: "${self:service}"
 
     BucketPolicy:
       Type: AWS::S3::BucketPolicy
@@ -184,7 +177,7 @@ resources:
             - Effect: Allow
               Action: s3:GetObject
               Principal:
-                AWS: "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${ssm:/app/gomitter/oai_id~true}"
+                AWS: "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${ssm:/app/gomitter/oai_id}"
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
@@ -192,7 +185,7 @@ resources:
     Domain:
       Type: AWS::ApiGateway::DomainName
       Properties:
-        CertificateArn: "${ssm:/acm/camelon.info~true}"
+        CertificateArn: "${ssm:/acm/camelon.info}"
         DomainName: "gomi-api.camelon.info"
 
     Mapping:
@@ -222,7 +215,7 @@ resources:
             - "gomi.camelon.info"
           HttpVersion: http2
           ViewerCertificate:
-            AcmCertificateArn: "${ssm:/acm/camelon.info~true}"
+            AcmCertificateArn: "${ssm:/acm/camelon.info}"
             SslSupportMethod: sni-only
           DefaultRootObject: index.html
           DefaultCacheBehavior:
@@ -240,8 +233,7 @@ resources:
             - Id: GomitterWebAssetsForCamelon
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
-                OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id~true}"
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
+                OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id}"
 
     RecordSetOfCamelon:
       Type: AWS::Route53::RecordSet
@@ -281,8 +273,7 @@ resources:
             - Id: GomitterWebAssetsForFamiliarLife
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
-                OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id~true}"
-        Tags: [{ Key: "Application", Value: "Gomitter" }]
+                OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id}"
 
     RecordSetOfFamiliarLife:
       Type: AWS::Route53::RecordSet
