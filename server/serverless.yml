@@ -219,7 +219,7 @@ resources:
             SslSupportMethod: sni-only
           DefaultRootObject: index.html
           DefaultCacheBehavior:
-            TargetOriginId: GomitterWebAssetsForCamelon
+            TargetOriginId: s3
             ViewerProtocolPolicy: redirect-to-https
             ForwardedValues:
               QueryString: true
@@ -230,7 +230,7 @@ resources:
             DefaultTTL: 8640000
           Enabled: true
           Origins:
-            - Id: GomitterWebAssetsForCamelon
+            - Id: s3
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
                 OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id}"
@@ -259,7 +259,7 @@ resources:
             SslSupportMethod: sni-only
           DefaultRootObject: index.html
           DefaultCacheBehavior:
-            TargetOriginId: GomitterWebAssetsForFamiliarLife
+            TargetOriginId: s3
             ViewerProtocolPolicy: redirect-to-https
             ForwardedValues:
               QueryString: true
@@ -270,7 +270,7 @@ resources:
             DefaultTTL: 8640000
           Enabled: true
           Origins:
-            - Id: GomitterWebAssetsForFamiliarLife
+            - Id: s3
               DomainName: "${self:service}.s3.amazonaws.com"
               S3OriginConfig:
                 OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id}"

@@ -77,6 +77,7 @@ const SESSION_TABLE           = 'gomi_session2';
 const SSM_KEY_JWT_SECRET      = '/gomitter/jwt_token';
 const SSM_KEY_CONSUMER_KEY    = '/gomitter/twitter_consumer_key';
 const SSM_KEY_CONSUMER_SECRET = '/gomitter/twitter_consumer_secret';
+
 const ROUTE = {
   start: (event, context, callback) => {
     return vo(function*(){
