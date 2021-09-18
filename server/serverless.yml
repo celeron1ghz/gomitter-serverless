@@ -192,30 +192,6 @@ resources:
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
-    ## api setting
-    Domain:
-      Type: AWS::ApiGateway::DomainName
-      Properties:
-        CertificateArn: "${ssm:/acm/camelon.info}"
-        DomainName: "gomi-api.camelon.info"
-
-    Mapping:
-      Type: AWS::ApiGateway::BasePathMapping
-      Properties:
-        DomainName: { Ref: Domain }
-        RestApiId:  { Ref: ApiGatewayRestApi }
-        Stage: dev
-
-    RecordSetOfAPI:
-      Type: AWS::Route53::RecordSet
-      Properties:
-        Name: "gomi-api.camelon.info"
-        Type: A
-        HostedZoneName: "camelon.info."
-        AliasTarget:
-          DNSName: { Fn::GetAtt: [Domain, DistributionDomainName] }
-          HostedZoneId: Z2FDTNDATAQYW2
-
     ## gomi.camelon.info setting
     CloudfrontOfCamelon:
       Type: AWS::CloudFront::Distribution

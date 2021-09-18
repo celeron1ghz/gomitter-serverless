@@ -32,7 +32,6 @@ class TwitterOAuth {
 
     // const callback = 'https://' + event.headers.Host + cbPath;
     const callback = 'https://' + process.env.SERVE_HOST + cbPath;
-    console.log(callback);
 
     this.oauth = new OAuth(
       'https://api.twitter.com/oauth/request_token',
