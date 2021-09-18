@@ -14,8 +14,10 @@ class ListGomiCommand {
 
   async run() {
     const self = this;
-    const getList = self.member_id
-      ? dynamodb.query({
+    let ret;
+
+    if (self.member_id) {
+      ret = await dynamodb.query({
         TableName: 'gomi_tweet2',
         IndexName: 'gomi_tweet2_gsi',
         KeyConditionExpression: 'member_id = :id',
@@ -29,43 +31,44 @@ class ListGomiCommand {
           next: data.LastEvaluatedKey ? data.LastEvaluatedKey.id : null,
         };
       })
-      : async () => {
-        let seq;
+    } else {
+      let seq;
 
-        if (self.next) {
-          seq = self.next;
-        } else {
-          const sequence = await dynamodb
-            .get({ TableName: 'gomi_sequence2', Key: { key: 'gomi_tweet' } }).promise()
-            .then(data => data.Item);
+      if (self.next) {
+        seq = self.next;
+      } else {
+        const sequence = await dynamodb
+          .get({ TableName: 'gomi_sequence2', Key: { key: 'gomi_tweet' } }).promise()
+          .then(data => data.Item);
 
-          if (!sequence) return { tweets: [] };
+        if (!sequence) return { tweets: [] };
 
-          seq = sequence.current_number;
-        }
+        seq = sequence.current_number;
+      }
 
-        const history_ids = _.range(seq - TWEET_PER_PAGE, seq + 1).filter(i => i > 0);
-        const data = await dynamodb.batchGet({
-          RequestItems: {
-            'gomi_tweet2': {
-              Keys: history_ids.map(i => { return { id: i } }),
-            }
+      const history_ids = _.range(seq - TWEET_PER_PAGE, seq + 1).filter(i => i > 0);
+      const data = await dynamodb.batchGet({
+        RequestItems: {
+          'gomi_tweet2': {
+            Keys: history_ids.map(i => { return { id: i } }),
           }
-        }).promise();
-
-        const ret = { tweets: _.sortBy(data.Responses.gomi_tweet2, ['id']).reverse() };
-
-        // show paging until zero
-        if (history_ids.length === TWEET_PER_PAGE + 1) {
-          const last = ret.tweets.pop();
-          ret.next = last.id;
         }
+      }).promise();
 
-        return ret;
-      };
+      ret = { tweets: _.sortBy(data.Responses.gomi_tweet2, ['id']).reverse() };
 
-    const ret = await getList;
-    if (ret.tweets.length === 0) return ret;
+      // show paging until zero
+      if (history_ids.length === TWEET_PER_PAGE + 1) {
+        const last = ret.tweets.pop();
+        ret.next = last.id;
+      }
+    }
+
+    console.log(self.member_id, ret);
+
+    if (!ret.tweets || ret.tweets.length === 0) {
+      return ret;
+    }
 
     const ids = _.uniqBy(ret.tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
     const gomi = await dynamodb

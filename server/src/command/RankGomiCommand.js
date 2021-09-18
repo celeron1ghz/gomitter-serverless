@@ -10,7 +10,7 @@ class RankGomiCommand {
     this.next = args.next;
   }
 
-  run() {
+  async run() {
     const self = this;
     const member_id = self.member_id || '##GLOBAL##';
     let ekey = null;

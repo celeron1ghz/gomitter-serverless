@@ -17,7 +17,7 @@ class TweetCommand {
     this.access_token_secret = user.access_token_secret;
   }
 
-  run() {
+  async run() {
     const self = this;
 
     // first, tweet
