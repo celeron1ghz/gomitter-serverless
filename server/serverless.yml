@@ -192,6 +192,26 @@ resources:
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
+    # CachePolicy:
+    #   Type: AWS::CloudFront::CachePolicy
+    #   Properties:
+    #     CachePolicyConfig:
+    #       DefaultTTL: 86400
+    #       MaxTTL: 86400
+    #       MinTTL: 86400
+    #       Name: gomitter-cache
+    #       ParametersInCacheKeyAndForwardedToOrigin:
+    #         CookiesConfig:
+    #           CookieBehavior: whitelist
+    #           Cookies: ['sessid']
+    #         EnableAcceptEncodingBrotli: true
+    #         EnableAcceptEncodingGzip: true
+    #         HeadersConfig:
+    #           HeaderBehavior: whitelist
+    #           Headers: ["Origin", "Authorization", "X-Gomitter-Cache-Key"]
+    #         QueryStringsConfig:
+    #           QueryStringBehavior: none
+
     ## gomi.camelon.info setting
     CloudfrontOfCamelon:
       Type: AWS::CloudFront::Distribution
@@ -207,9 +227,10 @@ resources:
           DefaultCacheBehavior:
             TargetOriginId: s3
             ViewerProtocolPolicy: redirect-to-https
+            # CachePolicyId: !Ref CachePolicy
             ForwardedValues:
               QueryString: true
-              Headers: [Origin]
+              Headers: ["Origin"]
             MinTTL: 86400
             MaxTTL: 86400
             DefaultTTL: 86400
@@ -219,6 +240,7 @@ resources:
               CachedMethods: [GET, HEAD]
               TargetOriginId: api
               ViewerProtocolPolicy: redirect-to-https
+              # CachePolicyId: !Ref CachePolicy
               ForwardedValues:
                 Cookies:
                   Forward: whitelist
