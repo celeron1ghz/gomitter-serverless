@@ -24,12 +24,9 @@ class TweetCommand {
 
     return vo(function*(){
       // first, tweet
-      const key    = (yield ssm.getParameter({ Name: '/gomitter/twitter_consumer_key',    WithDecryption: true }).promise() ).Parameter.Value;
-      const secret = (yield ssm.getParameter({ Name: '/gomitter/twitter_consumer_secret', WithDecryption: true }).promise() ).Parameter.Value;
-
       const client = new Twitter({
-        consumer_key:        key,
-        consumer_secret:     secret,
+        consumer_key:        process.env.SSM_KEY_CONSUMER_KEY,
+        consumer_secret:     process.env.SSM_KEY_CONSUMER_SECRET,
         access_token_key:    self.access_token,
         access_token_secret: self.access_token_secret,
       });

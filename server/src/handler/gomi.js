@@ -23,10 +23,10 @@ module.exports.main = (event, context, callback) => {
       throw { code: 400, message: 'INVALID_HEADER' };
     }
 
-    const secret = (yield ssm.getParameter({ Name: '/gomitter/jwt_token', WithDecryption: true }).promise() ).Parameter.Value;
     let sess;
+
     try {
-      sess = jwt.verify(token, secret);
+      sess = jwt.verify(token, process.env.SSM_KEY_JWT_SECRET);
     } catch(e) {
       throw { code: 401, message: 'INVALID_TOKEN' };
     }
