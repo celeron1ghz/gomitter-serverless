@@ -188,7 +188,7 @@ resources:
             - Effect: Allow
               Action: s3:GetObject
               Principal:
-                AWS: "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${ssm:/app/gomitter/oai_id}"
+                AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}
               Resource:
                 Fn::Join: [ "/", [ { Fn::GetAtt: [ Bucket, Arn ] }, "*" ] ]
 
@@ -233,13 +233,19 @@ resources:
             - Id: s3
               DomainName: !GetAtt Bucket.DomainName
               S3OriginConfig:
-                OriginAccessIdentity: "origin-access-identity/cloudfront/${ssm:/app/gomitter/oai_id}"
+                OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}
             - Id: api
               DomainName: { Fn::Join: ["", [{ Ref:  ApiGatewayRestApi }, ".execute-api.ap-northeast-1.amazonaws.com" ]] }
               OriginPath: /dev
               CustomOriginConfig:
                 OriginProtocolPolicy: https-only
                 OriginSSLProtocols: [TLSv1.2]
+
+    CloudFrontOriginAccessIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: !Ref AWS::StackName
 
     RecordSetOfCamelon:
       Type: AWS::Route53::RecordSet
