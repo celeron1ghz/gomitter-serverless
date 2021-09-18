@@ -249,7 +249,8 @@ function App() {
       <Well bsSize="small" className="clearfix">
         <span onClick={() => alert("バーーーカwwwwwwwwwwwwwwwwwwww")}>
           <Glyphicon glyph="trash" />
-          Gomitter <Glyphicon glyph="trash" />
+          Gomitter
+          <Glyphicon glyph="trash" />
         </span>
         <div className="pull-right">
           {
@@ -310,7 +311,9 @@ function App() {
       <Panel bsStyle="default">
         <Panel.Heading>
           <Glyphicon glyph="trash" />
+          {' '}
           {selectedSearch ? Label[selectedSearch] : "読み込み中..."}
+          {' '}
           {count ? <Badge> {count} </Badge> : ""}
           <div className="pull-right" onClick={reload}>
             <Glyphicon glyph="refresh" />
@@ -337,8 +340,9 @@ function App() {
                   {t.created_at && (
                     <span>
                       <Glyphicon glyph="time" />
-                      {new Date(t.created_at * 1000).toLocaleString()}(
-                      {relativeDate(t.created_at * 1000)})
+                      {' '}
+                      {new Date(t.created_at * 1000).toLocaleString()}
+                      ({relativeDate(t.created_at * 1000)})
                     </span>
                   )}
                 </div>
