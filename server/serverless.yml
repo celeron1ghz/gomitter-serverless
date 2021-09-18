@@ -64,6 +64,14 @@ functions:
 resources:
   Description: Gomitter Serverless
   Resources:
+    ## override
+    MainLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties: { RetentionInDays: 7 }
+    AuthLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties: { RetentionInDays: 7 }
+
     ## tables
     GomiSessionTable:
       Type: AWS::DynamoDB::Table
