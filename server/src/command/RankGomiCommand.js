@@ -1,6 +1,5 @@
 const aws = require('aws-sdk');
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true });
-const vo = require('vo');
 const _ = require('lodash');
 
 class RankGomiCommand {
@@ -21,8 +20,7 @@ class RankGomiCommand {
       ekey = { member_id: member_id, gomi_id: splitted[0], count: +splitted[1] };
     }
 
-    return vo(function*(){
-      const ret = yield dynamodb.query({
+      const ret = await dynamodb.query({
         TableName: 'gomi_rank2',
         IndexName: 'gomi_rank2_gsi',
         KeyConditionExpression: 'member_id = :id',
@@ -43,7 +41,7 @@ class RankGomiCommand {
       if (ret.tweets.length === 0) return ret;
 
       const ids  = _.uniqBy(ret.tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
-      const gomi = yield dynamodb
+      const gomi = await dynamodb
         .batchGet({ RequestItems: { 'gomi2': { Keys: ids } } }).promise()
         .then(data => data.Responses.gomi2);
 
@@ -59,7 +57,6 @@ class RankGomiCommand {
       }
 
       return ret;
-    });
   }
 }
 

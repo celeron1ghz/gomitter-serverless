@@ -1,6 +1,5 @@
 const aws = require('aws-sdk');
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true });
-const vo = require('vo');
 const _ = require('lodash');
 
 const TWEET_PER_PAGE = 10;
@@ -13,9 +12,8 @@ class ListGomiCommand {
     this.next      = args.next;
   }
 
-  run() {
+  async run() {
     const self = this;
-    return vo(function*(){
       const getList = self.member_id
         ? dynamodb.query({
             TableName: 'gomi_tweet2',
@@ -31,13 +29,13 @@ class ListGomiCommand {
               next: data.LastEvaluatedKey ? data.LastEvaluatedKey.id : null,
             };
           })
-        : vo(function*(){
+        : async () => {
             let seq;
 
             if (self.next) {
               seq = self.next;
             } else {
-              const sequence = yield dynamodb
+              const sequence = await dynamodb
                 .get({ TableName: 'gomi_sequence2', Key: { key: 'gomi_tweet' } }).promise()
                 .then(data => data.Item);
 
@@ -47,7 +45,7 @@ class ListGomiCommand {
             }
 
             const history_ids = _.range(seq - TWEET_PER_PAGE, seq + 1).filter(i => i > 0);
-            const data = yield dynamodb.batchGet({
+            const data = await dynamodb.batchGet({
               RequestItems: {
                 'gomi_tweet2': {
                   Keys: history_ids.map(i => { return { id: i } }),
@@ -64,13 +62,13 @@ class ListGomiCommand {
             }
 
             return ret;
-          });
+          };
 
-      const ret = yield getList;
+      const ret = await getList;
       if (ret.tweets.length === 0) return ret;
 
       const ids  = _.uniqBy(ret.tweets.map(t => { return { gomi_id: t.gomi_id } }), 'gomi_id');
-      const gomi = yield dynamodb
+      const gomi = await dynamodb
         .batchGet({ RequestItems: { 'gomi2': { Keys: ids } } }).promise()
         .then(data => data.Responses.gomi2);
 
@@ -85,14 +83,13 @@ class ListGomiCommand {
         delete t.gomi_id;
       }
 
-      const global = yield dynamodb
+      const global = await dynamodb
         .get({ TableName: 'gomi_count2', Key: { member_id: self.member_id || '##GLOBAL##' } }).promise()
         .then(data => data.Item);
 
       ret.count = global ? global.count : 0;
 
       return ret;
-    });
   }
 }
 

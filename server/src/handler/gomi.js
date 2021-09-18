@@ -1,9 +1,7 @@
 'use strict';
 
-const vo  = require('vo');
 const jwt = require('jsonwebtoken');
 const aws = require('aws-sdk');
-const ssm = new aws.SSM();
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true });
 
 const COMMANDS = {
@@ -12,8 +10,8 @@ const COMMANDS = {
   tweet: require('../command/TweetCommand'),
 };
 
-module.exports.main = (event, context, callback) => {
-  return vo(function*(){
+module.exports.main = async (event, context, callback) => {
+  try {
     let token;
 
     try {
@@ -34,7 +32,7 @@ module.exports.main = (event, context, callback) => {
 
     let user;
     try {
-      user = yield dynamodb.get({
+      user = await dynamodb.get({
         TableName: "gomi_session2",
         Key: { "uid": sess.sessid },
       }).promise().then(data => data.Item);
@@ -69,7 +67,7 @@ module.exports.main = (event, context, callback) => {
 
     try {
       console.log("ARGS:", user.screen_name, JSON.stringify(body));
-      const ret = yield obj.run();
+      const ret = await obj.run();
 
       return callback(null, {
         statusCode: 200,
@@ -82,7 +80,7 @@ module.exports.main = (event, context, callback) => {
       throw { code: 400, message: 'INTERNAL_ERROR' };
     }
 
-  }).catch(err => {
+  } catch (err) {
     let code;
     let mess;
     console.log("ERROR:", err);
@@ -100,5 +98,5 @@ module.exports.main = (event, context, callback) => {
       headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: mess }),
     });
-  });
+  }
 };
