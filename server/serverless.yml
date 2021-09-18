@@ -77,13 +77,11 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: gomi_session2
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - { AttributeName: uid, AttributeType: S }
         KeySchema:
           - { AttributeName: uid, KeyType: HASH }
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
         TimeToLiveSpecification:
           AttributeName: ttl
           Enabled: true
@@ -92,18 +90,17 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: gomi2
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - { AttributeName: gomi_id, AttributeType: S }
         KeySchema:
           - { AttributeName: gomi_id, KeyType: HASH }
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
 
     GomiRankTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: gomi_rank2
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - { AttributeName: gomi_id,   AttributeType: S }
           - { AttributeName: member_id, AttributeType: S }
@@ -111,66 +108,57 @@ resources:
         KeySchema:
           - { AttributeName: member_id, KeyType: HASH }
           - { AttributeName: gomi_id,   KeyType: RANGE }
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: gomi_rank2_gsi
+            ProvisionedThroughput:
+              ReadCapacityUnits: 0
+              WriteCapacityUnits: 0
             KeySchema:
               - { AttributeName: member_id, KeyType: HASH }
               - { AttributeName: count,     KeyType: RANGE }
             Projection:
               ProjectionType: ALL
-            ProvisionedThroughput:
-              ReadCapacityUnits: 1
-              WriteCapacityUnits: 1
 
     GomiCountTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: gomi_count2
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - { AttributeName: member_id, AttributeType: S }
         KeySchema:
           - { AttributeName: member_id, KeyType: HASH }
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
 
     GomiSequenceTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: gomi_sequence2
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - { AttributeName: key, AttributeType: S }
         KeySchema:
           - { AttributeName: key, KeyType: HASH }
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
 
     GomiTweetTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: gomi_tweet2
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - { AttributeName: id,        AttributeType: N }
           - { AttributeName: member_id, AttributeType: S }
         KeySchema:
           - { AttributeName: id, KeyType: HASH }
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: gomi_tweet2_gsi
+            ProvisionedThroughput:
+              ReadCapacityUnits: 0
+              WriteCapacityUnits: 0
             KeySchema:
               - { AttributeName: member_id, KeyType: HASH }
               - { AttributeName: id,        KeyType: RANGE }
             Projection:
               ProjectionType: ALL
-            ProvisionedThroughput:
-              ReadCapacityUnits: 1
-              WriteCapacityUnits: 1
 
     ## serve bucket setting
     Bucket:
