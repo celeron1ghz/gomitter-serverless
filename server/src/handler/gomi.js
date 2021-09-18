@@ -5,8 +5,8 @@ const aws = require('aws-sdk');
 const dynamodb = new aws.DynamoDB.DocumentClient({ convertEmptyValues: true });
 
 const COMMANDS = {
-  rank:  require('../command/RankGomiCommand'),
-  list:  require('../command/ListGomiCommand'),
+  rank: require('../command/RankGomiCommand'),
+  list: require('../command/ListGomiCommand'),
   tweet: require('../command/TweetCommand'),
 };
 
@@ -17,7 +17,7 @@ module.exports.main = async (event, context, callback) => {
     try {
       const token_matched = event.headers.Authorization.match(/^Bearer\s+(.*?)$/);
       token = token_matched[1];
-    } catch(e) {
+    } catch (e) {
       throw { code: 400, message: 'INVALID_HEADER' };
     }
 
@@ -25,7 +25,7 @@ module.exports.main = async (event, context, callback) => {
 
     try {
       sess = jwt.verify(token, process.env.SSM_KEY_JWT_SECRET);
-    } catch(e) {
+    } catch (e) {
       throw { code: 401, message: 'INVALID_TOKEN' };
     }
 
@@ -36,7 +36,7 @@ module.exports.main = async (event, context, callback) => {
         TableName: "gomi_session2",
         Key: { "uid": sess.sessid },
       }).promise().then(data => data.Item);
-    } catch(e) {
+    } catch (e) {
       throw e; // maybe dynamodb's internal error
     }
 
@@ -47,7 +47,7 @@ module.exports.main = async (event, context, callback) => {
     let body;
     try {
       body = JSON.parse(event.body);
-    } catch(e) {
+    } catch (e) {
       throw { code: 400, message: 'INVALID_BODY' };
     }
 
@@ -59,8 +59,8 @@ module.exports.main = async (event, context, callback) => {
 
     let obj;
     try {
-      obj = new cmd(body,user);
-    } catch(e) {
+      obj = new cmd(body, user);
+    } catch (e) {
       throw { code: 400, message: 'INVALID_PARAM' };
     }
 
@@ -75,7 +75,7 @@ module.exports.main = async (event, context, callback) => {
         body: JSON.stringify(ret),
       });
 
-    } catch(e) {
+    } catch (e) {
       console.log("Error on running command:", e);
       throw { code: 400, message: 'INTERNAL_ERROR' };
     }
