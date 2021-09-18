@@ -21,7 +21,7 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "../node_modules/bootstrap/dist/css/bootstrap-theme.min.css";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
 
-const GOMI_ENDPOINT_URL = "https://gomi-api.camelon.info";
+const GOMI_ENDPOINT_URL = "https://gomi.camelon.info/api";
 
 function gomiUserDataApi() {
   const token = window.localStorage.getItem("token");
@@ -53,7 +53,7 @@ function gomiDataApi(param) {
   }
 
   return window
-    .fetch(GOMI_ENDPOINT_URL, {
+    .fetch(GOMI_ENDPOINT_URL + "/endpoint", {
       method: "POST",
       body: JSON.stringify(param),
       headers: new window.Headers({ Authorization: "Bearer " + token })

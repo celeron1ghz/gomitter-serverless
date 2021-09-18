@@ -23,9 +23,16 @@ class TwitterOAuth {
     this.consumer_secret = secret;
 
     // fix path for aws's auto-assigned URL and mydomain
+    // const innerPath = event.path;
+    // const outerPath = event.requestContext.path;
+    // const cbPath    = outerPath.replace(innerPath, "/api/auth/callback");
     const innerPath = event.path;
     const outerPath = event.requestContext.path;
-    const cbPath = outerPath.replace(innerPath, "/auth/callback");
+    const cbPath = innerPath.replace("start", "callback");
+
+    // const callback = 'https://' + event.headers.Host + cbPath;
+    const callback = 'https://' + process.env.SERVE_HOST + cbPath;
+    console.log(callback);
 
     this.oauth = new OAuth(
       'https://api.twitter.com/oauth/request_token',
@@ -33,7 +40,7 @@ class TwitterOAuth {
       key,
       secret,
       '1.0A',
-      'https://' + event.headers.Host + cbPath,
+      callback,
       'HMAC-SHA1'
     );
   }
@@ -222,7 +229,7 @@ const ROUTE = {
 };
 
 module.exports.auth = (event, context, callback) => {
-  const action = event.path.split('/')[2];
+  const action = event.path.split('/')[3];
   const method = ROUTE[action];
 
   if (method) {
